@@ -1,0 +1,76 @@
+---------------------------------------------------------------------
+To build the software for Linux:
+
+1. Install the packages cmake, libtiff, libtiff-devel, libjpeg8,
+   libjpeg8-devel, libexif12, and libexif-devel.  from the appropriate
+   repository.  (Other versions of libjpeg may work as well.)
+
+2. Run the following commands from the top level of the
+   visualize-geometry directory tree:
+
+     cd build
+     cmake ..
+     make
+     cd ..
+
+     Copy the executable file "build/visualize-geometry" to wherever you
+     want it.
+
+---------------------------------------------------------------------
+To build the software for MacOS:
+
+1. Install the package CMake <http://www.cmake.org/>
+
+   Download and unpack Unix/Linux source from
+   <http://www.cmake.org/download/>.
+
+   In directory where source has been unpacked:
+
+   ./bootstrap
+   make
+   sudo make install
+
+2. Install the package libtiff <http://www.simplesystems.org/libtiff/>
+   (this URL changes periodically!)
+
+   Download and unpack the latest stable release of libtiff from
+   <ftp://download.osgeo.org/libtiff/tiff-4.0.7.zip>.
+
+   In directory where source has been unpacked:
+
+   ./configure
+   make
+   sudo make install 
+
+3. Install the package libjpeg from <http://www.ijg.org/> or another
+   source of your choosing. (A long term format war is underway between
+   different JPEG groups.  We take no position on which flavor is best
+   to uses.
+
+   In directory where source has been unpacked:
+
+   ./configure
+   make
+   sudo make install 
+
+4. Install the package libexif from
+   <https://sourceforge.net/projects/libexif/files/libexif/>
+
+   In directory where source has been unpacked:
+
+   ./configure
+   make
+   sudo make install 
+
+5. Run the following commands from the top level of the
+   radiance-conversion directory tree:
+
+     cd build
+     cmake ..
+     make
+     cd ..
+
+     Copy the executable files "build/visualize-geometry" to wherever you
+     want it.
+
+---------------------------------------------------------------------

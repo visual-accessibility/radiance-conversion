@@ -1,0 +1,47 @@
+.TH TIFF2RAD 1 "26 February 2017" "DEVA Project"
+.SH NAME
+tiff2rad \- convert TIFF file to RADIANCE rgbe file
+.SH SYNOPSIS
+\." \fBtiff2rad\fR [--sRGBprimaries] input.tif output.hdr
+\fBtiff2rad\fR [\fIoptions\fR] \fIinput.tif\fR {\fIoutput.hdr\fR | \-}
+.SH DESCRIPTION
+Convert a TIFF file to a RADIANCE rgbe file.  Input TIFF file can be
+8-bit grayscale, 8-bit RGB, or 32 bit float RGB. Output RADIANCE file is
+always rgbe.  The output can optionally be "\-", indicating that the
+output image should be written to standard output.
+.PP
+8-bit RGB and grayscale files are assumed to have sRGB luminance
+encoding regardless of whether or not there is an attached color profile
+and ignoring the actual color profile if attached.  This is different
+from the RADIANCE \fBra_tiff\fR program for these data types, which
+assumes straight gamma encoding.  As with the RADIANCE \fBra_tiff\fR
+program, the default behavior or \fBtiff2rad\fR is to use the same R, G,
+and B color primaries for the TIFF and RADIANCE files, even though the
+RADIANCE color primaries are different from the sRGB standard.
+.PP
+If the input TIFF file has a FocalLengthIn35mmFormat EXIF tag, it is
+used to create a VIEW record in the output radiance file with the
+corresponding horizontal and vertical fields of view.  This is not
+exact, since the TIFF tab is stored as an integer and so is subject to
+quantization error.  Also, the conversion is done assuming that the 35
+mm equivalent focal length is computed based on the image diagonal,
+which is not always the case.  See
+.IP
+https://en.wikipedia.org/wiki/35_mm_equivalent_focal_length
+.P
+for more information on this.  This is important in the deva-filer
+workflow, and also allows determination of photographically obtained
+imagry, assuming that the camera sets the tag (and doesn't name the tag
+something else).
+.SH OPTIONS
+.TP
+\fB\-\-sRGBprimaries\fR
+Assume TIFF file is encoded using sRGB primaries for all pixel types,
+and convert pixel colors to RADIANCE primaries.
+.SH LIMITATIONS
+Does not currently support reading of Logluv encoded TIFF files or
+STONITS TIFF tag.  Does not currently support writing of RADIANCE xyze
+format files.  The assumption that the luminance encoding for 8-bit
+grayscale values is the same as for sRGB is problematic.
+.SH AUTHOR
+William B. Thompson

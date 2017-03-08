@@ -1,0 +1,79 @@
+.TH RAD2TIFF 1 "1 March 2017" "DEVA Project"
+.SH NAME
+rad2tiff \- convert RADIANCE rgbe or xyze file to a TIFF file
+.SH SYNOPSIS
+\." \fBrad2tiff\fR [--ldr] [--exposure=stops] [--fullrange] [--sRGBprimaries]
+\."	[--autoadjust] [--unadjusted_values]
+\."	[--compresszip] [--compresszipp] [--compresslzw] [--compresslzwp]
+\."		input.hdr output.tif
+\fBrad2tiff\fR [\fIoptions\fR] {\fIinput.hdr\fR | \-} \fIoutput.tif\fR
+.SH DESCRIPTION
+Convert RADIANCE rgbe or xyze file to a TIFF file.  The input can
+optionally be "\-", indicating that the input image should be read from
+standard input.  Output TIFF file can be either 32 bit float RGB
+(default) or 8 bit RGB.  Pixel values in the TIFF file are adjusted to
+take into account EXPOSURE records in the RADIANCE file and the
+different units used in xyze files.
+.PP
+If a VIEW record is available in the header of the input RADIANCE file,
+the program sets the FocalLengthIn35mmFormat EXIF tag in the output TIFF
+file.  This allows keeping track of the field of view, which is
+important in the deva-filer workflow.
+.SH OPTIONS
+.TP
+\fB\-\-ldr\fR
+Output is 8 bit RGB (low dynamic range, aka LDR) TIFF file, using the
+sRGB color profile.  \fB\-\-sRGBprimaries\fR is implied.  Note that this
+i is to uses different from the default behavior of the RADIANCE
+\fBrad2tiff\fR program, which uses the same R, G, and B color primaries
+for the TIFF and RADIANCE files, even though the RADIANCE color
+primaries are different from the sRGB standard, and uses straight
+gamma-based luminance encoding.
+.TP
+\fB\-\-exposure=\fIstop\fR
+Adjust the exposure of the output file relative to the input file,
+specified in f-stops (powers  of two).  E.g., \fB\-\-exposure=+2\fR
+increases the luminance in the output by a factor or four, while
+\fB\-\-exposure=-1\fR decreases the luminance by half.  Fractional
+values are allowed.
+.TP
+\fB\-\-autoadjust\fB
+Auto adjust brightness values to be in an approximately displayable range.
+Can be combined with \fB\-\-exposure=\fIstop\fR.  Mostly for use with
+\fB\-\-ldr\fR.
+.TP
+\fB\-\-unadjusted_values\fB
+Use numeric pixel values in RADIANCE file, ignoring EXPOSURE records in
+file header.  Sometimes this leads to brightness values in an
+approximately displayable range.  Can be combined with
+\fB\-\-exposure=\fIstop\fR.  Mostly for use with \fB\-\-ldr\fR.
+.TP
+\fB\-\-fullrange\fB
+With \fB\-\-ldr\fR, remaps the brightness brightness range to cover
+nearly all of the 8-bit range (the top 5% of the range is excluded, to
+avoid problems with LDC clipping).  Without \fB\-\-ldr\fR, the range of
+brightness is remapped to [0.0--0.95].
+.TP
+\fB\-\-sRGBprimaries\fR
+Use sRGB encoding in output file.  This will generally result in more
+accurate color rendition on modern displays. Implied by the
+\fB\-\-ldr\fR flag.
+.TP
+\fB\-\-compresszip\fR
+Use zip compression for output.
+.TP
+\fB\-\-compresszipp\fR
+Use zip compression with prediction for output.
+.TP
+\fB\-\-compresslzw\fR
+Use LZW compression for output.
+.TP
+\fB\-\-compresslzwp\fR
+Use LZW compression with predittion for output.
+.SH LIMITATIONS
+Does not currently support writing of Logluv encoded TIFF files or
+STONITS TIFF tag.  The FocalLengthIn35mmFormat is stored as an integer,
+and as a result field-of-view information is subject to quantization
+error.
+.SH AUTHOR
+William B. Thompson

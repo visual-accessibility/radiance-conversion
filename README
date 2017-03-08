@@ -1,0 +1,31 @@
+This repository contains code for converting between RADIANCE rgbe and
+xyze HDR image formats and TIFF and JPEG files.  The programs are
+support routines for the deva-filter workflow.  Somewhat similar
+functionality is provided by the RADIANCE ra_tiff program.
+
+The software can be built on either Linux or MacOS.  No Windows version
+currently exits.
+
+---------------------------------------------------------------------
+
+To make a displayable version of a RADIANCE HDR file, try:
+
+    rad2jpeg --autoadjust input.hdr output.jpg
+
+If you need to make exposure adjustment, try:
+
+    rad2jpeg --autoadjust --exposure=+1  input.hdr output.jpg
+			or
+    rad2jpeg --autoadjust --exposure=-1  input.hdr output.jpg
+
+Increase or decrease the exposure adjustment as needed.
+
+---------------------------------------------------------------------
+
+Documentation is in the man directory.
+
+Open source license is at "deva-license.h".
+
+This product includes Radiance software (http://radsite.lbl.gov/)
+developed by the Lawrence Berkeley National Laboratory
+(http://www.lbl.gov/).

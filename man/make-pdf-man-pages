@@ -1,0 +1,5 @@
+#! /bin/sh
+
+man -t ./rad2tiff.1 | ps2pdf - rad2tiff.pdf
+man -t ./tiff2rad.1 | ps2pdf - tiff2rad.pdf
+man -t ./rad2jpeg.1 | ps2pdf - rad2jpeg.pdf
