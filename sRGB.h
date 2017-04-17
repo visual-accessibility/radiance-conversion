@@ -39,4 +39,3 @@ TT_XYZ	    xyY_to_XYZ ( TT_xyY xyY );
 #endif
 
 #endif  /* __DEVA_sRGB_CONVERT_H */
-

@@ -14,7 +14,8 @@
 #include "radiance-conversion-version.h"
 #include "deva-license.h"
 
-void	set_header ( RadianceHeader *header, VIEW *view, char *description );
+void	set_header ( RadianceHeader *header, VIEW *view, int exposure_set,
+            double exposure, char *description );
 void	set_fov_in_view ( VIEW *view, RadianceHeader *header );
 
 TT_float_image *
@@ -54,13 +55,14 @@ TT_float_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     COLOR		*radiance_scanline;
     RadianceColorFormat	color_format;
     VIEW		view;
+    int			exposure_set;
     double		exposure;
     int			row, col;
     int			n_rows, n_cols;
     char		*description;
 
     DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
-	    &color_format, &view, &exposure, &description );
+	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -70,7 +72,7 @@ TT_float_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 
     luminance = TT_float_image_new ( n_rows, n_cols );
 
-    set_header ( header, &view, description );
+    set_header ( header, &view, exposure_set, exposure, description );
 
     for ( row = 0; row < n_rows; row++ ) {
 	if ( freadscan( radiance_scanline, n_cols, radiance_fp ) < 0 ) {
@@ -78,15 +80,15 @@ TT_float_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 		"TT_float_image_from_radfile: error reading Radiance file!" );
 	    exit ( EXIT_FAILURE );
 	}
-	if ( color_format == rgbe ) {
+	if ( color_format == radcolor_rgbe ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		TT_image_data ( luminance, row, col ) =
-		    exposure * bright ( radiance_scanline[col] );
+		    bright ( radiance_scanline[col] );
 	    }
-	} else if ( color_format == xyze ) {
+	} else if ( color_format == radcolor_xyze ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		TT_image_data ( luminance, row, col ) =
-		    exposure * colval ( radiance_scanline[col], CIEY );
+		    colval ( radiance_scanline[col], CIEY );
 	    }
 	} else {
 	    fprintf ( stderr,
@@ -138,11 +140,11 @@ TT_float_image_to_radfile ( FILE *radiance_fp, TT_float_image *luminance,
     n_rows = TT_image_n_rows ( luminance );
     n_cols = TT_image_n_cols ( luminance );
     description = header.header_text;
-    color_format = rgbe;
+    color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
     DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
-	    view, -1.0, description );
+	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -205,13 +207,14 @@ TT_RGBf_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     COLOR		RGBf_rad_pixel;
     RadianceColorFormat	color_format;
     VIEW		view;
+    int			exposure_set;
     double		exposure;
     int			row, col;
     int			n_rows, n_cols;
     char		*description;
 
     DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
-	    &color_format, &view, &exposure, &description );
+	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -221,7 +224,7 @@ TT_RGBf_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 
     RGBf = TT_RGBf_image_new ( n_rows, n_cols );
 
-    set_header ( header, &view, description );
+    set_header ( header, &view, exposure_set, exposure, description );
 
     for ( row = 0; row < n_rows; row++ ) {
 	if ( freadscan( radiance_scanline, n_cols, radiance_fp ) < 0 ) {
@@ -229,25 +232,25 @@ TT_RGBf_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 		"TT_RGBf_image_from_radfile: error reading Radiance file!" );
 	    exit ( EXIT_FAILURE );
 	}
-	if ( color_format == xyze ) {
+	if ( color_format == radcolor_xyze ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		colortrans ( RGBf_rad_pixel, xyz2rgbmat,
 			radiance_scanline[col] );
 		TT_image_data ( RGBf, row, col ).red =
-		    exposure * colval ( RGBf_rad_pixel, RED );
+		    colval ( RGBf_rad_pixel, RED );
 		TT_image_data ( RGBf, row, col ).green =
-		    exposure * colval ( RGBf_rad_pixel, GRN );
+		    colval ( RGBf_rad_pixel, GRN );
 		TT_image_data ( RGBf, row, col ).blue =
-		    exposure * colval ( RGBf_rad_pixel, BLU );
+		    colval ( RGBf_rad_pixel, BLU );
 	    }
-	} else if ( color_format == rgbe ) {
+	} else if ( color_format == radcolor_rgbe ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		TT_image_data ( RGBf, row, col ).red =
-		    exposure * colval ( radiance_scanline[col], RED );
+		    colval ( radiance_scanline[col], RED );
 		TT_image_data ( RGBf, row, col ).green =
-		    exposure * colval ( radiance_scanline[col], GRN );
+		    colval ( radiance_scanline[col], GRN );
 		TT_image_data ( RGBf, row, col ).blue =
-		    exposure * colval ( radiance_scanline[col], BLU );
+		    colval ( radiance_scanline[col], BLU );
 	    }
 	} else {
 	    fprintf ( stderr,
@@ -299,11 +302,11 @@ TT_RGBf_image_to_radfile ( FILE *radiance_fp, TT_RGBf_image *RGBf,
     n_rows = TT_image_n_rows ( RGBf );
     n_cols = TT_image_n_cols ( RGBf );
     description = header.header_text;
-    color_format = rgbe;
+    color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
     DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
-	    view, -1.0, description );
+	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -367,13 +370,14 @@ TT_XYZ_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     COLOR		XYZ_rad_pixel;
     RadianceColorFormat	color_format;
     VIEW		view;
+    int			exposure_set;
     double		exposure;
     int			row, col;
     int			n_rows, n_cols;
     char		*description;
 
     DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
-	    &color_format, &view, &exposure, &description );
+	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -383,7 +387,7 @@ TT_XYZ_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 
     XYZ = TT_XYZ_image_new ( n_rows, n_cols );
 
-    set_header ( header, &view, description );
+    set_header ( header, &view, exposure_set, exposure, description );
 
     for ( row = 0; row < n_rows; row++ ) {
 	if ( freadscan( radiance_scanline, n_cols, radiance_fp ) < 0 ) {
@@ -391,29 +395,29 @@ TT_XYZ_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 		    "TT_XYZ_image_from_radfile: error reading Radiance file!" );
 	    exit ( EXIT_FAILURE );
 	}
-	if ( color_format == rgbe ) {
+	if ( color_format == radcolor_rgbe ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		colortrans ( XYZ_rad_pixel, rgb2xyzmat,
 			radiance_scanline[col] );
 		TT_image_data ( XYZ, row, col ).X =
-		    exposure * colval ( XYZ_rad_pixel, CIEX );
+		    colval ( XYZ_rad_pixel, CIEX );
 		TT_image_data ( XYZ, row, col ).Y =
-		    exposure * colval ( XYZ_rad_pixel, CIEY );
+		    colval ( XYZ_rad_pixel, CIEY );
 		TT_image_data ( XYZ, row, col ).Z =
-		    exposure * colval ( XYZ_rad_pixel, CIEZ );
+		    colval ( XYZ_rad_pixel, CIEZ );
 	    }
-	} else if ( color_format == xyze ) {
+	} else if ( color_format == radcolor_xyze ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		TT_image_data ( XYZ, row, col ).X =
-		    exposure * colval ( radiance_scanline[col], CIEX );
+		    colval ( radiance_scanline[col], CIEX );
 		TT_image_data ( XYZ, row, col ).Y =
-		    exposure * colval ( radiance_scanline[col], CIEY );
+		    colval ( radiance_scanline[col], CIEY );
 		TT_image_data ( XYZ, row, col ).Z =
-		    exposure * colval ( radiance_scanline[col], CIEZ );
+		    colval ( radiance_scanline[col], CIEZ );
 	    }
 	} else {
 	    fprintf ( stderr,
-		    "TT_XYZ_from_radfile: internal error!\n" );
+		    "TT_XYZ_image_from_radfile: internal error!\n" );
 	    exit ( EXIT_FAILURE );
 	}
     }
@@ -462,11 +466,11 @@ TT_XYZ_image_to_radfile ( FILE *radiance_fp, TT_XYZ_image *XYZ,
     n_rows = TT_image_n_rows ( XYZ );
     n_cols = TT_image_n_cols ( XYZ );
     description = header.header_text;
-    color_format = rgbe;
+    color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
     DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
-	    view, -1.0, description );
+	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -532,13 +536,14 @@ TT_xyY_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     TT_XYZ		XYZ_TT_pixel;
     RadianceColorFormat	color_format;
     VIEW		view;
+    int			exposure_set;
     double		exposure;
     int			row, col;
     int			n_rows, n_cols;
     char		*description;
 
     DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
-	    &color_format, &view, &exposure, &description );
+	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -548,7 +553,7 @@ TT_xyY_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 
     xyY = TT_xyY_image_new ( n_rows, n_cols );
 
-    set_header ( header, &view, description );
+    set_header ( header, &view, exposure_set, exposure, description );
 
     for ( row = 0; row < n_rows; row++ ) {
 	if ( freadscan( radiance_scanline, n_cols, radiance_fp ) < 0 ) {
@@ -556,23 +561,23 @@ TT_xyY_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
 		"TT_xyY_image_from_radfile: error reading Radiance file!" );
 	    exit ( EXIT_FAILURE );
 	}
-	if ( color_format == rgbe ) {
+	if ( color_format == radcolor_rgbe ) {
 	    for ( col = 0; col < n_cols; col++ ) {
 		colortrans ( XYZ_rad_pixel, rgb2xyzmat,
 			radiance_scanline[col] );
-		XYZ_TT_pixel.X = exposure * colval ( XYZ_rad_pixel, CIEX );
-		XYZ_TT_pixel.Y = exposure * colval ( XYZ_rad_pixel, CIEY );
-		XYZ_TT_pixel.Z = exposure * colval ( XYZ_rad_pixel, CIEZ );
+		XYZ_TT_pixel.X = colval ( XYZ_rad_pixel, CIEX );
+		XYZ_TT_pixel.Y = colval ( XYZ_rad_pixel, CIEY );
+		XYZ_TT_pixel.Z = colval ( XYZ_rad_pixel, CIEZ );
 
 		TT_image_data ( xyY, row, col ) = XYZ_to_xyY ( XYZ_TT_pixel );
 	    }
-	} else if ( color_format == xyze ) {
+	} else if ( color_format == radcolor_xyze ) {
 	    for ( col = 0; col < n_cols; col++ ) {
-		XYZ_TT_pixel.X = exposure *
+		XYZ_TT_pixel.X =
 		    colval ( radiance_scanline[col], CIEX );
-		XYZ_TT_pixel.Y = exposure *
+		XYZ_TT_pixel.Y =
 		    colval ( radiance_scanline[col], CIEY );
-		XYZ_TT_pixel.Z = exposure *
+		XYZ_TT_pixel.Z =
 		    colval ( radiance_scanline[col], CIEZ );
 
 		TT_image_data ( xyY, row, col ) = XYZ_to_xyY ( XYZ_TT_pixel );
@@ -629,11 +634,11 @@ TT_xyY_image_to_radfile ( FILE *radiance_fp, TT_xyY_image *xyY,
     n_rows = TT_image_n_rows ( xyY );
     n_cols = TT_image_n_cols ( xyY );
     description = header.header_text;
-    color_format = rgbe;
+    color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
     DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
-	    view, -1.0, description );
+	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
     if ( radiance_scanline == NULL ) {
@@ -661,204 +666,16 @@ TT_xyY_image_to_radfile ( FILE *radiance_fp, TT_xyY_image *xyY,
     free ( radiance_scanline );
 }
 
-TT_RGBf_image *
-TT_RGBf_image_from_radfilename_noeadj ( char *filename, RadianceHeader *header )
-/*
- * Reads Radiance rgbe or xyze file specified by pathname and returns
- * an in-memory RGBf image.  A pathname of "-" specifies standard input.
- */
-{
-    FILE	    *radiance_fp;
-    TT_RGBf_image   *RGBf;
-
-    if ( strcmp ( filename, "-" ) == 0 ) {
-	radiance_fp = stdin;
-    } else {
-	radiance_fp = fopen ( filename, "r" );
-	if ( radiance_fp == NULL ) {
-	    perror ( filename );
-	    exit ( EXIT_FAILURE );
-	}
-    }
-
-    RGBf = TT_RGBf_image_from_radfile_noeadj ( radiance_fp, header );
-    fclose ( radiance_fp );
-
-    return ( RGBf );
-}
-
-TT_RGBf_image *
-TT_RGBf_image_from_radfile_noeadj ( FILE *radiance_fp, RadianceHeader *header )
-/*
- * Reads Radiance rgbe or xyze file from an open file descriptor and returns
- * an in-memory RGBf image.
- */
-{
-    TT_RGBf_image   	*RGBf;
-    COLOR		*radiance_scanline;
-    COLOR		RGBf_rad_pixel;
-    RadianceColorFormat	color_format;
-    VIEW		view;
-    double		exposure;
-    int			row, col;
-    int			n_rows, n_cols;
-    char		*description;
-
-    DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
-	    &color_format, &view, &exposure, &description );
-
-    exposure = 1.0;	/* ignore value in RADIANCE header */
-
-    radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
-    if ( radiance_scanline == NULL ) {
-	fprintf ( stderr, "TT_RGBf_image_from_radfile: malloc failed!\n" );
-	exit ( EXIT_FAILURE );
-    }
-
-    RGBf = TT_RGBf_image_new ( n_rows, n_cols );
-
-    set_header ( header, &view, description );
-
-    for ( row = 0; row < n_rows; row++ ) {
-	if ( freadscan( radiance_scanline, n_cols, radiance_fp ) < 0 ) {
-	    fprintf ( stderr,
-		"TT_RGBf_image_from_radfile: error reading Radiance file!" );
-	    exit ( EXIT_FAILURE );
-	}
-	if ( color_format == xyze ) {
-	    for ( col = 0; col < n_cols; col++ ) {
-		colortrans ( RGBf_rad_pixel, xyz2rgbmat,
-			radiance_scanline[col] );
-		TT_image_data ( RGBf, row, col ).red =
-		    exposure * colval ( RGBf_rad_pixel, RED );
-		TT_image_data ( RGBf, row, col ).green =
-		    exposure * colval ( RGBf_rad_pixel, GRN );
-		TT_image_data ( RGBf, row, col ).blue =
-		    exposure * colval ( RGBf_rad_pixel, BLU );
-	    }
-	} else if ( color_format == rgbe ) {
-	    for ( col = 0; col < n_cols; col++ ) {
-		TT_image_data ( RGBf, row, col ).red =
-		    exposure * colval ( radiance_scanline[col], RED );
-		TT_image_data ( RGBf, row, col ).green =
-		    exposure * colval ( radiance_scanline[col], GRN );
-		TT_image_data ( RGBf, row, col ).blue =
-		    exposure * colval ( radiance_scanline[col], BLU );
-	    }
-	} else {
-	    fprintf ( stderr,
-		    "TT_RGBf_image_from_radfile: internal error!\n" );
-	    exit ( EXIT_FAILURE );
-	}
-    }
-
-    free ( radiance_scanline );
-
-    return ( RGBf );
-}
-
-TT_XYZ_image *
-TT_XYZ_image_from_radfilename_noeadj ( char *filename, RadianceHeader *header )
-/*
- * Reads Radiance rgbe or xyze file specified by pathname and returns
- * an in-memory XYZ image.  A pathname of "-" specifies standard input.
- */
-{
-    FILE		*radiance_fp;
-    TT_XYZ_image	*XYZ;
-
-    if ( strcmp ( filename, "-" ) == 0 ) {
-	radiance_fp = stdin;
-    } else {
-	radiance_fp = fopen ( filename, "r" );
-	if ( radiance_fp == NULL ) {
-	    perror ( filename );
-	    exit ( EXIT_FAILURE );
-	}
-    }
-
-    XYZ = TT_XYZ_image_from_radfile_noeadj ( radiance_fp, header );
-    fclose ( radiance_fp );
-
-    return ( XYZ );
-}
-
-TT_XYZ_image *
-TT_XYZ_image_from_radfile_noeadj ( FILE *radiance_fp, RadianceHeader *header )
-/*
- * Reads Radiance rgbe or xyze file from an open file descriptor and returns
- * an in-memory XYZ image.
- */
-{
-    TT_XYZ_image	*XYZ;
-    COLOR		*radiance_scanline;
-    COLOR		XYZ_rad_pixel;
-    RadianceColorFormat	color_format;
-    VIEW		view;
-    double		exposure;
-    int			row, col;
-    int			n_rows, n_cols;
-    char		*description;
-
-    DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
-	    &color_format, &view, &exposure, &description );
-
-    exposure = 1.0;	/* ignore value in RADIANCE header */
-
-    radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
-    if ( radiance_scanline == NULL ) {
-	fprintf ( stderr, "TT_XYZ_image_from_radfile: malloc failed!\n" );
-	exit ( EXIT_FAILURE );
-    }
-
-    XYZ = TT_XYZ_image_new ( n_rows, n_cols );
-
-    set_header ( header, &view, description );
-
-    for ( row = 0; row < n_rows; row++ ) {
-	if ( freadscan( radiance_scanline, n_cols, radiance_fp ) < 0 ) {
-	    fprintf ( stderr,
-		    "TT_XYZ_image_from_radfile: error reading Radiance file!" );
-	    exit ( EXIT_FAILURE );
-	}
-	if ( color_format == rgbe ) {
-	    for ( col = 0; col < n_cols; col++ ) {
-		colortrans ( XYZ_rad_pixel, rgb2xyzmat,
-			radiance_scanline[col] );
-		TT_image_data ( XYZ, row, col ).X =
-		    exposure * colval ( XYZ_rad_pixel, CIEX );
-		TT_image_data ( XYZ, row, col ).Y =
-		    exposure * colval ( XYZ_rad_pixel, CIEY );
-		TT_image_data ( XYZ, row, col ).Z =
-		    exposure * colval ( XYZ_rad_pixel, CIEZ );
-	    }
-	} else if ( color_format == xyze ) {
-	    for ( col = 0; col < n_cols; col++ ) {
-		TT_image_data ( XYZ, row, col ).X =
-		    exposure * colval ( radiance_scanline[col], CIEX );
-		TT_image_data ( XYZ, row, col ).Y =
-		    exposure * colval ( radiance_scanline[col], CIEY );
-		TT_image_data ( XYZ, row, col ).Z =
-		    exposure * colval ( radiance_scanline[col], CIEZ );
-	    }
-	} else {
-	    fprintf ( stderr,
-		    "TT_XYZ_from_radfile: internal error!\n" );
-	    exit ( EXIT_FAILURE );
-	}
-    }
-
-    free ( radiance_scanline );
-
-    return ( XYZ );
-}
-
 void
-set_header ( RadianceHeader *header, VIEW *view, char *description )
+set_header ( RadianceHeader *header, VIEW *view, int exposure_set,
+	double exposure, char *description )
 {
     if ( header != NULL ) {
 	header->vFOV = view->vert;
 	header->hFOV = view->horiz;
+
+	header->exposure_set = exposure_set;
+	header->exposure = exposure;
 
 	if ( description == NULL ) {
 	    header->header_text = NULL;

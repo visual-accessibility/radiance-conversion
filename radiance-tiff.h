@@ -17,6 +17,8 @@ typedef struct {
     				/* identifier or the FORMAT line */
     double  hFOV;
     double  vFOV;
+    int	    exposure_set;
+    double  exposure;
 } RadianceHeader;
 
 #ifdef __cplusplus
@@ -36,23 +38,14 @@ TT_RGBf_image	*TT_RGBf_image_from_radfilename ( char *filename,
 		    RadianceHeader *header );
 TT_RGBf_image	*TT_RGBf_image_from_radfile ( FILE *radiance_fp,
 		    RadianceHeader *header );
-TT_RGBf_image	*TT_RGBf_image_from_radfilename_noeadj ( char *filename,
-		    RadianceHeader *header );
-TT_RGBf_image	*TT_RGBf_image_from_radfile_noeadj ( FILE *radiance_fp,
-		    RadianceHeader *header );
-
 void		TT_RGBf_image_to_radfilename ( char *filename,
-		    TT_RGBf_image *luminance, RadianceHeader header );
+		    TT_RGBf_image *RGBf, RadianceHeader header );
 void		TT_RGBf_image_to_radfile ( FILE *radiance_fp,
-		    TT_RGBf_image *luminance, RadianceHeader header );
+		    TT_RGBf_image *RGBf, RadianceHeader header );
 
 TT_XYZ_image	*TT_XYZ_image_from_radfilename ( char *filename,
 		    RadianceHeader *header );
 TT_XYZ_image	*TT_XYZ_image_from_radfile ( FILE *radiance_fp,
-		    RadianceHeader *header );
-TT_XYZ_image	*TT_XYZ_image_from_radfilename_noeadj ( char *filename,
-		    RadianceHeader *header );
-TT_XYZ_image	*TT_XYZ_image_from_radfile_noeadj ( FILE *radiance_fp,
 		    RadianceHeader *header );
 void		TT_XYZ_image_to_radfilename ( char *filename,
 		    TT_XYZ_image *XYZ, RadianceHeader header );

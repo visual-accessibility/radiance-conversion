@@ -8,9 +8,11 @@
  * 	TT_RGB		RGB 3 x 8-bit/pixel
  * 	TT_RGBf		RGB 3 x 32-bit float/pixel
  *
- * LDR color formats are assumed to be in the sRGB color space, even though
- * the rgbe primaries are different.  No check is made for an actual color
- * profile.  Subtleties such as blackpoint and whitepoint are ignored.
+ * 8-bit RGB and grayscale files are assumed to have sRGB luminance
+ * encoding regardless of whether or not there is an attached color profile
+ * and ignoring the actual color profile if attached.  This is different
+ * from the Radiance \fBra_tiff\fR program for these data types, which
+ * assumes straight gamma encoding.
  *
  * Special cased to convert TIFF equivalent 35mm focal length EXIF tag
  * value to Radiance field of view VIEW parameters.
@@ -22,34 +24,41 @@
 #include "radiance-header.h"
 #include "FOV.h"
 #include "sRGB.h"
+#include "sRGB_radiance.h"
 // #define	TT_CHECK_BOUNDS
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"
 #include "deva-license.h"
 
-char	*Usage = "tiff2rad [--sRGBprimaries] input.tif output.hdr";
+char	*Usage = "tiff2rad [--sRGBencoding] input.tif output.hdr";
 int	args_needed = 2;
 
 int
 main ( int argc, char *argv[] )
 {
-    int		    sRGBprimaries_flag = FALSE;
+    int		    sRGBencoding_flag = FALSE;
     TIFF	    *input;
+    double	    stonits;
     DEVA_FOV	    deva_fov;
     TT_gray_image   *gray_image;
     TT_float_image  *float_image;
     TT_RGB_image    *RGB_image;
     TT_RGBf_image   *RGBf_image;
-    TT_XYZ_image    *XYZ_image;
     RadianceHeader  header;
+    RGBPRIMS	    radiance_prims = STDPRIMS;
+    RGBPRIMS	    sRGB_prims = sRGBPRIMS;
+    COLORMAT	    sRGB2radrgbmat;
+    COLOR	    radiance_pixel_in;
+    COLOR	    radiance_pixel_out;
+    TT_RGBf	    TT_pixel;
     int		    row, col;
     int		    argpt = 1;
 
     while ( ( ( argc - argpt ) >= 1 ) && ( argv[argpt][0] == '-' ) ) {
-	if ( ( strcmp ( argv[argpt], "--sRGBprimaries" ) == 0 ) ||
-		( strcmp ( argv[argpt], "-sRGBprimaries" ) == 0
+	if ( ( strcmp ( argv[argpt], "--sRGBencoding" ) == 0 ) ||
+		( strcmp ( argv[argpt], "-sRGBencoding" ) == 0
 		) ) {
-	    sRGBprimaries_flag = TRUE;
+	    sRGBencoding_flag = TRUE;
 	    argpt++;
 	} else {
 	    fprintf ( stderr, "unknown argument (%s)!\n", argv[argpt] );
@@ -68,11 +77,18 @@ main ( int argc, char *argv[] )
 	exit ( EXIT_FAILURE );
     }
 
+    if ( TIFFGetField ( input, TIFFTAG_STONITS, &stonits ) ) {
+	header.exposure_set = TRUE;
+	header.exposure = WHTEFFICACY / stonits;
+    } else {
+	header.exposure_set = FALSE;
+    }
+
     switch ( TT_file_type ( input ) ) {
 
 	case TTTypeGray:
 
-	    sRGBprimaries_flag = TRUE;
+	    sRGBencoding_flag = TRUE;
 
 	    gray_image = TT_gray_image_from_file ( input );
 	    RGBf_image = TT_RGBf_image_new ( TT_image_n_rows ( gray_image ),
@@ -93,6 +109,8 @@ main ( int argc, char *argv[] )
 			TT_image_data ( RGBf_image, row, col ).green =
 			TT_image_data ( RGBf_image, row, col ).blue =
 			gray_to_Y ( TT_image_data ( gray_image, row, col ) );
+		    		/* assumes sRGB luminance encoding, */
+				/* but does not alter primaries */
 		}
 	    }
 
@@ -130,7 +148,7 @@ main ( int argc, char *argv[] )
 
 	case TTTypeRGB:
 
-	    sRGBprimaries_flag = TRUE;
+	    sRGBencoding_flag = TRUE;
 
 	    RGB_image = TT_RGB_image_from_file ( input );
 	    RGBf_image = TT_RGBf_image_new ( TT_image_n_rows ( RGB_image ),
@@ -178,25 +196,31 @@ main ( int argc, char *argv[] )
 	    break;
     }
 
-    if ( sRGBprimaries_flag ) {
-	/*
-	 * Convert to TIFF XYZ using sRGB primaries, then convert to Radiance
-	 * RGB using Radiance primaries.
-	 */
-	XYZ_image = TT_XYZ_image_new ( TT_image_n_rows ( RGBf_image ),
-		TT_image_n_cols ( RGBf_image ) );
-	for ( row = 0; row < TT_image_n_rows ( XYZ_image ); row++ ) {
-	    for ( col = 0; col < TT_image_n_cols ( XYZ_image ); col++ ) {
-		TT_image_data ( XYZ_image, row, col ) =
-		    RGBf_to_XYZ ( TT_image_data ( RGBf_image, row, col ) );
+    if ( sRGBencoding_flag ) {
+	/* convert to sRGB primaries */
+	comprgb2rgbWBmat ( sRGB2radrgbmat, sRGB_prims, radiance_prims );
+
+	for ( row = 0; row < TT_image_n_rows ( RGBf_image ); row++ ) {
+	    for ( col = 0; col < TT_image_n_cols ( RGBf_image ); col++ ) {
+		TT_pixel = TT_image_data ( RGBf_image, row, col );
+
+		colval ( radiance_pixel_in, RED ) = TT_pixel.red;
+		colval ( radiance_pixel_in, GRN) = TT_pixel.green;
+		colval ( radiance_pixel_in, BLU ) = TT_pixel.blue;
+
+		colortrans ( radiance_pixel_out, sRGB2radrgbmat,
+			radiance_pixel_in );
+
+		TT_pixel.red = colval ( radiance_pixel_out, RED );
+		TT_pixel.green = colval ( radiance_pixel_out, GRN );
+		TT_pixel.blue = colval ( radiance_pixel_out, BLU );
+
+		TT_image_data ( RGBf_image, row, col) = TT_pixel;
 	    }
 	}
-	TT_XYZ_image_to_radfilename ( argv[argpt++], XYZ_image, header);
-		/* writes Radiance rgbe image using Radiance primaries */
-	TT_XYZ_image_delete ( XYZ_image );
-    } else {
-	TT_RGBf_image_to_radfilename ( argv[argpt++], RGBf_image, header);
     }
+
+    TT_RGBf_image_to_radfilename ( argv[argpt++], RGBf_image, header);
 
     if ( header.header_text != NULL ) {
 	free ( header.header_text );

@@ -4,17 +4,13 @@
  * Default output format is 32-bit float/color.
  *
  * Optional output format (--ldr flag) is 8-bit/color.  For 8-bit output, each
- * color is encoded using the sRGB conventions, even though the rgbe primaries
- * are different.  No actual color profile is attached to the ouput file.
- * Subtleties such as blackpoint and whitepoint are ignored.
+ * color is encoded using the sRGB conventions.
  *
  * Special cased to convert TIFF equivalent 35mm focal length EXIF tag value to
  * Radiance field of view VIEW parameters.
  *
  * --fullrange flag causes output values to be linearly remapped to fill
  *  (almost) all of the available range.
- *
- * Does not set stonits tag.
  */
 
 #include <stdlib.h>
@@ -23,7 +19,9 @@
 #include "radiance-tiff.h"
 #include "FOV.h"
 #include "sRGB.h"
+#include "sRGB_radiance.h"
 #include "tifftoolsimage.h"
+#include "radiance/color.h"
 #include "radiance-conversion-version.h"
 #include "deva-license.h"
 
@@ -33,8 +31,8 @@
 					/* slightly more conservative.  */ 
 
 char	*Usage =
-"rad2tiff [--ldr] [--exposure=stops] [--fullrange] [--sRGBprimaries]"
-    "\n\t[--autoadjust] [--unadjusted_values]"
+"rad2tiff [--ldr] [--exposure=stops] [--fullrange] [--sRGBencoding]"
+    "\n\t[--autoadjust] [--original-units|--photometric-units]"
     "\n\t[--compresszip] [--compresszipp] [--compresslzw] [--compresslzwp]"
     "\n\t\tinput.hdr output.tif";
 int	args_needed = 2;
@@ -62,16 +60,17 @@ void	TT_RGBf_invert ( TT_RGBf_image *image );
 void	set_compression ( TIFF *file, COMPRESSION compression_type );
 double	find_glare_threshold ( TT_RGBf_image *image );
 double	fmax3 ( double v1, double v2, double v3 );
+TT_RGBf	TT_RGBf_scalar_mult ( TT_RGBf original, double multiplier );
+void	original_units ( TT_RGBf_image *image, RadianceHeader *header );
+void	photometric_units ( TT_RGBf_image *image, RadianceHeader *header );
 
 int
 main ( int argc, char *argv[] )
 {
-    int		    argpt = 1;
     COMPRESSION	    compression_type = none;
     TT_RGBf_image   *input_image;
-    TT_XYZ_image    *XYZ_image;
     TT_RGB_image    *sRGB_image;
-    int		    sRGBprimaries_flag = FALSE;
+    int		    sRGBencoding_flag = FALSE;
     int		    ldr_flag = FALSE;
     int		    exposure_flag = FALSE;
     double	    exposure_stops = 1.0;
@@ -81,7 +80,8 @@ main ( int argc, char *argv[] )
     int		    halfrange_flag = FALSE;
     int		    halfrange_invert_flag = FALSE;
     int		    autoadjust_flag = FALSE;
-    int		    unadjusted_values_flag = FALSE;
+    int		    original_units_flag = FALSE;
+    int		    photometric_units_flag = FALSE;
     int		    exposure_flag_count;
     float	    adjust_max;
     TIFF	    *output;
@@ -89,6 +89,13 @@ main ( int argc, char *argv[] )
     int		    row, col;
     DEVA_FOV	    fov;
     char	    *new_description = NULL;
+    RGBPRIMS	    radiance_prims = STDPRIMS;
+    RGBPRIMS	    sRGB_prims = sRGBPRIMS;
+    COLORMAT	    radrgb2sRGBmat;
+    COLOR	    radiance_pixel_in;
+    COLOR	    radiance_pixel_out;
+    TT_RGBf	    TT_pixel;
+    int		    argpt = 1;
 
     while ( ( ( argc - argpt ) >= 1 ) && ( argv[argpt][0] == '-' ) ) {
 	if ( strcmp ( argv[argpt], "-" ) == 0 ) {
@@ -97,7 +104,7 @@ main ( int argc, char *argv[] )
 	if ( ( strcmp ( argv[argpt], "--ldr" ) == 0 ) ||
 		( strcmp ( argv[argpt], "-ldr" ) == 0 ) ) {
 	    ldr_flag = TRUE;
-	    sRGBprimaries_flag = TRUE;	/* implied by --ldr */
+	    sRGBencoding_flag = TRUE;	/* implied by --ldr */
 	    argpt++;
 	} else if ( ( strcmp ( argv[argpt], "--fullrange" ) == 0 ) ||
 		( strcmp ( argv[argpt], "-fullrange" ) == 0 ) ) {
@@ -113,17 +120,21 @@ main ( int argc, char *argv[] )
 	    exposure_stops = atof ( argv[argpt] + strlen ( "-exposure=" ) );
 	    exposure_flag = TRUE;
 	    argpt++;
-	} else if ( ( strcmp ( argv[argpt], "--sRGBprimaries" ) == 0 ) ||
-		( strcmp ( argv[argpt], "-sRGBprimaries" ) == 0 ) ) {
-	    sRGBprimaries_flag = TRUE;
+	} else if ( ( strcmp ( argv[argpt], "--sRGBencoding" ) == 0 ) ||
+		( strcmp ( argv[argpt], "-sRGBencoding" ) == 0 ) ) {
+	    sRGBencoding_flag = TRUE;
 	    argpt++;
 	} else if ( ( strcmp ( argv[argpt], "--autoadjust" ) == 0 ) ||
 		( strcmp ( argv[argpt], "-autoadjust" ) == 0 ) ) {
 	    autoadjust_flag = TRUE;
 	    argpt++;
-	} else if ( ( strcmp ( argv[argpt], "--unadjusted_values" ) == 0 ) ||
-		( strcmp ( argv[argpt], "-unadjusted_values" ) == 0 ) ) {
-	    unadjusted_values_flag = TRUE;
+	} else if ( ( strcmp ( argv[argpt], "--original-units" ) == 0 ) ||
+		( strcmp ( argv[argpt], "-original-units" ) == 0 ) ) {
+	    original_units_flag = TRUE;
+	    argpt++;
+	} else if ( ( strcmp ( argv[argpt], "--photometric-units" ) == 0 ) ||
+		( strcmp ( argv[argpt], "-photometric-units" ) == 0 ) ) {
+	    photometric_units_flag = TRUE;
 	    argpt++;
 	} else if ( ( strcmp ( argv[argpt], "--compresszip" ) == 0 ) ||
 		( strcmp ( argv[argpt], "-compresszip" ) == 0 ) ) {
@@ -158,7 +169,7 @@ main ( int argc, char *argv[] )
 	    compression_type = compresslzwp;
 	    argpt++;
 
-	/* hidden options */
+	    /* hidden options */
 	} else if ( ( strcmp ( argv[argpt], "--fullrangeinvert" ) == 0 ) ||
 		( strcmp ( argv[argpt], "-fullrangeinvert" ) == 0) ) {
 	    fullrange_invert_flag = TRUE;
@@ -185,6 +196,12 @@ main ( int argc, char *argv[] )
 	}
     }
 
+    if ( original_units_flag && photometric_units_flag ) {
+	fprintf ( stderr,
+		"can't mix --original_units and --photometric_units!\n" );
+	return ( EXIT_FAILURE );	/* error return */
+    }
+
     exposure_flag_count = 0;
     if ( exposure_flag ) { exposure_flag_count++; }
     if ( fullrange_flag ) { exposure_flag_count++; }
@@ -201,31 +218,24 @@ main ( int argc, char *argv[] )
 	return ( EXIT_FAILURE );	/* error return */
     }
 
-    if ( sRGBprimaries_flag ) {
-	/*
-	 * Convert to XYZ using Radiance color primaries, then convert back
-	 * to RGBf using sRGB primaries.
-	 */
-	if ( unadjusted_values_flag ) {
-	    XYZ_image = TT_XYZ_image_from_radfilename_noeadj ( argv[argpt++],
-		    &header );
-	} else {
-	    XYZ_image = TT_XYZ_image_from_radfilename ( argv[argpt++],
-		    &header );
-	}
-	input_image = TT_RGBf_image_new ( TT_image_n_rows ( XYZ_image ),
-		TT_image_n_cols ( XYZ_image ) );
+    input_image = TT_RGBf_image_from_radfilename ( argv[argpt++], &header );
 
-	for ( row = 0; row < TT_image_n_rows ( XYZ_image ); row++ ) {
-	    for ( col = 0; col < TT_image_n_cols ( XYZ_image ); col++ ) {
-		TT_image_data ( input_image, row, col ) =
-		    XYZ_to_RGBf ( TT_image_data ( XYZ_image, row, col ) );
+    if ( original_units_flag ) {
+	original_units ( input_image, &header );
+    } else if ( photometric_units_flag ) {
+	photometric_units ( input_image, &header );
+    }
+
+    if ( exposure_flag ) {
+	exposure_adjust = pow ( 2.0, exposure_stops );
+	for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
+	    for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
+		TT_image_data ( input_image, row, col ).red *= exposure_adjust;
+		TT_image_data ( input_image, row, col ).green
+		    *= exposure_adjust;
+		TT_image_data ( input_image, row, col ).blue *= exposure_adjust;
 	    }
 	}
-
-	TT_XYZ_image_delete ( XYZ_image );
-    } else {
-	input_image = TT_RGBf_image_from_radfilename ( argv[argpt++], &header );
     }
 
     if ( fullrange_flag ) {
@@ -245,14 +255,26 @@ main ( int argc, char *argv[] )
 	}
     }
 
-    if ( exposure_flag ) {
-	exposure_adjust = pow ( 2.0, exposure_stops );
+    if ( sRGBencoding_flag ) {
+	/* convert to sRGB primaries */
+	comprgb2rgbWBmat ( radrgb2sRGBmat, radiance_prims, sRGB_prims );
+
 	for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
 	    for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
-		TT_image_data ( input_image, row, col ).red *= exposure_adjust;
-		TT_image_data ( input_image, row, col ).green
-		    *= exposure_adjust;
-		TT_image_data ( input_image, row, col ).blue *= exposure_adjust;
+		TT_pixel = TT_image_data ( input_image, row, col );
+
+		colval ( radiance_pixel_in, RED ) = TT_pixel.red;
+		colval ( radiance_pixel_in, GRN ) = TT_pixel.green;
+		colval ( radiance_pixel_in, BLU ) = TT_pixel.blue;
+
+		colortrans ( radiance_pixel_out, radrgb2sRGBmat,
+			radiance_pixel_in );
+
+		TT_pixel.red = colval ( radiance_pixel_out, RED );
+		TT_pixel.green = colval ( radiance_pixel_out, GRN );
+		TT_pixel.blue = colval ( radiance_pixel_out, BLU );
+
+		TT_image_data ( input_image, row, col ) = TT_pixel;
 	    }
 	}
     }
@@ -271,9 +293,28 @@ main ( int argc, char *argv[] )
 	    exit ( EXIT_FAILURE );
 	}
 
+	if ( original_units_flag ) {
+	    if ( !TIFFSetField ( output, TIFFTAG_STONITS, WHTEFFICACY ) ) {
+		fprintf (stderr, "Can't set TIFFTAG_STONITS!\n" );
+		exit ( EXIT_FAILURE );
+	    }
+	} else if ( photometric_units_flag ) {
+	    if ( !TIFFSetField ( output, TIFFTAG_STONITS, 1.0 ) ) {
+		fprintf (stderr, "Can't set TIFFTAG_STONITS!\n" );
+		exit ( EXIT_FAILURE );
+	    }
+	} else {
+	    if ( !TIFFSetField ( output, TIFFTAG_STONITS,
+			WHTEFFICACY / header.exposure ) ) {
+		fprintf (stderr, "Can't set TIFFTAG_STONITS!\n" );
+		exit ( EXIT_FAILURE );
+	    }
+	}
+
 	sRGB_image = TT_RGB_image_new ( TT_image_n_rows ( input_image ),
 		TT_image_n_cols ( input_image ) );
 
+	/* convert to 8-bit values using sRGB non-linear encoding */
 	for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
 	    for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
 		TT_image_data ( sRGB_image, row, col ) =
@@ -313,11 +354,29 @@ main ( int argc, char *argv[] )
 
 	set_compression ( output, compression_type );
 
-	if ( sRGBprimaries_flag ) {
+	if ( sRGBencoding_flag ) {
 	    /* attach sRGB color profile */
 	    if ( !TIFFSetField ( output, TIFFTAG_ICCPROFILE,
 			sizeof ( icc_sRGB_linear ), icc_sRGB_linear ) ) {
 		fprintf (stderr, "Can't set TIFFTAG_ICCPROFILE!\n" );
+		exit ( EXIT_FAILURE );
+	    }
+	}
+
+	if ( original_units_flag ) {
+	    if ( !TIFFSetField ( output, TIFFTAG_STONITS, WHTEFFICACY ) ) {
+		fprintf (stderr, "Can't set TIFFTAG_STONITS!\n" );
+		exit ( EXIT_FAILURE );
+	    }
+	} else if ( photometric_units_flag ) {
+	    if ( !TIFFSetField ( output, TIFFTAG_STONITS, 1.0 ) ) {
+		fprintf (stderr, "Can't set TIFFTAG_STONITS!\n" );
+		exit ( EXIT_FAILURE );
+	    }
+	} else {
+	    if ( !TIFFSetField ( output, TIFFTAG_STONITS,
+			WHTEFFICACY / header.exposure ) ) {
+		fprintf (stderr, "Can't set TIFFTAG_STONITS!\n" );
 		exit ( EXIT_FAILURE );
 	    }
 	}
@@ -580,4 +639,56 @@ double
 fmax3 ( double v1, double v2, double v3 )
 {
     return ( fmax ( v1, fmax ( v2, v3 ) ) );
+}
+
+TT_RGBf
+TT_RGBf_scalar_mult ( TT_RGBf original, double multiplier )
+{
+    TT_RGBf new_value;
+
+    new_value.red = multiplier * original.red;
+    new_value.green = multiplier * original.green;
+    new_value.blue = multiplier * original.blue;
+
+    return ( new_value );
+}
+
+void
+original_units ( TT_RGBf_image *image, RadianceHeader *header )
+{
+    int	    n_rows, n_cols;
+    int	    row, col;
+
+    n_rows = TT_image_n_rows ( image );
+    n_cols = TT_image_n_cols ( image );
+
+    for ( row = 0; row < n_rows; row++ ) {
+	for ( col = 0; col < n_cols; col++ ) {
+	    TT_image_data ( image, row, col ) =
+		TT_RGBf_scalar_mult ( TT_image_data ( image, row, col ),
+			1.0 / header->exposure );
+	}
+    }
+
+    header->exposure = 1.0;
+}
+
+void
+photometric_units ( TT_RGBf_image *image, RadianceHeader *header )
+{
+    int	    n_rows, n_cols;
+    int	    row, col;
+
+    n_rows = TT_image_n_rows ( image );
+    n_cols = TT_image_n_cols ( image );
+
+    for ( row = 0; row < n_rows; row++ ) {
+	for ( col = 0; col < n_cols; col++ ) {
+	    TT_image_data ( image, row, col ) =
+		TT_RGBf_scalar_mult ( TT_image_data ( image, row, col ),
+			WHTEFFICACY / header->exposure );
+	}
+    }
+
+    header->exposure = 1.0;
 }

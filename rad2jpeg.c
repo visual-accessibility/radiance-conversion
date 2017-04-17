@@ -3,6 +3,8 @@
  *
  * Radiance values from 0.0 to 1.0 remapped to 8-bit unsigned int using
  * sRGB convention.  Subtleties such as blackpoint and whitepoint are ignored.
+ *
+ * Ignores EXPOSURE record in Radiance header.
  */
 
 #include <stdlib.h>
@@ -12,7 +14,9 @@
 #include "TT-jpeg.h"
 #include "FOV.h"
 #include "sRGB.h"
+#include "sRGB_radiance.h"
 #include "tifftoolsimage.h"
+#include "radiance/color.h"
 #include "radiance-conversion-version.h"
 #include "deva-license.h"
 
@@ -22,8 +26,7 @@
 					/* slightly more conservative.  */
 
 char	*Usage =
-	    "rad2jpeg [--exposure=stops] [--autoadjust] [--unadjusted_values]"
-	    "\n\tinput.hdr output.jpg";
+	    "rad2jpeg [--exposure=stops] [--autoadjust] input.hdr output.jpg";
 int	args_needed = 2;
 
 #include "sRGB_IEC61966-2-1_black_scaled.c"	/* hardwired binary profile */
@@ -35,19 +38,23 @@ void	TT_RGBf_rescale ( TT_RGBf_image *image, float new_max, float new_min );
 int
 main ( int argc, char *argv[] )
 {
-    int		    argpt = 1;
     int		    exposure_flag = FALSE;
     double	    exposure_stops;
     double	    exposure_adjust = 1.0;
     int		    autoadjust_flag = FALSE;
     float	    adjust_max;
-    int		    unadjusted_values_flag = FALSE;
-    TT_XYZ_image    *XYZ_image;		/* to help with primaries conversion */
     TT_RGBf_image   *input_image;
     TT_RGB_image    *sRGB_image;
     RadianceHeader  header;
     int		    row, col;
     char	    *new_description = NULL;
+    RGBPRIMS	    radiance_prims = STDPRIMS;
+    RGBPRIMS	    sRGB_prims = sRGBPRIMS;
+    COLORMAT	    radrgb2sRGBmat;
+    COLOR	    radiance_pixel_in;
+    COLOR	    radiance_pixel_out;
+    TT_RGBf	    TT_pixel;
+    int		    argpt = 1;
 
     while ( ( ( argc - argpt ) >= 1 ) && ( argv[argpt][0] == '-' ) ) {
 	if ( strcmp ( argv[argpt], "-" ) == 0 ) {
@@ -66,10 +73,6 @@ main ( int argc, char *argv[] )
 		( strcmp ( argv[argpt], "-autoadjust" ) == 0 ) ) {
 	    autoadjust_flag = TRUE;
 	    argpt++;
-	} else if ( ( strcmp ( argv[argpt], "--unadjusted_values" ) == 0 ) ||
-		( strcmp ( argv[argpt], "-unadjusted_values" ) == 0 ) ) {
-	    unadjusted_values_flag = TRUE;
-	    argpt++;
 
 	/* hidden options */
 	} else if ( strncmp ( argv[argpt], "-description=",
@@ -80,6 +83,7 @@ main ( int argc, char *argv[] )
 		    strlen ( "--description=" ) ) == 0 ) {
 	    new_description = argv[argpt] + strlen ( "--description=" );
 	    argpt++;
+
 	} else {
 	    fprintf ( stderr, "unknown argument!\n" );
 	    return ( EXIT_FAILURE );	/* error return */
@@ -91,26 +95,28 @@ main ( int argc, char *argv[] )
 	return ( EXIT_FAILURE );        /* error return */
     }
 
-    /*
-     * Convert to XYZ using Radiance color primaries, then convert back
-     * to RGBf using sRGB primaries.
-     */
+    input_image = TT_RGBf_image_from_radfilename ( argv[argpt++], &header );
 
-    if ( unadjusted_values_flag ) {
-	XYZ_image = TT_XYZ_image_from_radfilename_noeadj ( argv[argpt++],
-		&header );
-    } else {
-	XYZ_image = TT_XYZ_image_from_radfilename ( argv[argpt++], &header );
-    }
+    /* convert to sRGB primaries */
 
-    input_image = TT_RGBf_image_new ( TT_image_n_rows ( XYZ_image ),
-	    TT_image_n_cols ( XYZ_image ) );
+    comprgb2rgbWBmat ( radrgb2sRGBmat, radiance_prims, sRGB_prims );
 
-    for ( row = 0; row < TT_image_n_rows ( XYZ_image ); row++ ) {
-	for ( col = 0; col < TT_image_n_cols ( XYZ_image ); col++ )
-	{
-	    TT_image_data ( input_image, row, col ) =
-		XYZ_to_RGBf ( TT_image_data ( XYZ_image, row, col ) );
+    for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
+	for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
+	    TT_pixel = TT_image_data ( input_image, row, col );
+
+	    colval ( radiance_pixel_in, RED ) = TT_pixel.red;
+	    colval ( radiance_pixel_in, GRN ) = TT_pixel.green;
+	    colval ( radiance_pixel_in, BLU ) = TT_pixel.blue;
+
+	    colortrans ( radiance_pixel_out, radrgb2sRGBmat,
+		    radiance_pixel_in );
+
+	    TT_pixel.red = colval ( radiance_pixel_out, RED );
+	    TT_pixel.green = colval ( radiance_pixel_out, GRN );
+	    TT_pixel.blue = colval ( radiance_pixel_out, BLU );
+
+	    TT_image_data ( input_image, row, col ) = TT_pixel;
 	}
     }
 
@@ -133,6 +139,7 @@ main ( int argc, char *argv[] )
 	}
     }
 
+    /* convert to 8-bit/color using sRGB non-linear encoding */
     sRGB_image = TT_RGB_image_new ( TT_image_n_rows ( input_image ),
 	    TT_image_n_cols ( input_image ) );
 
@@ -147,7 +154,6 @@ main ( int argc, char *argv[] )
 
     TT_RGB_image_delete ( sRGB_image );
     TT_RGBf_image_delete ( input_image );
-    TT_XYZ_image_delete ( XYZ_image );
 
     return ( EXIT_SUCCESS );	/* normal exit */
 }
