@@ -1,3 +1,5 @@
+// #define TT_CHECK_BOUNDS
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,7 +11,6 @@
 #include "radiance/resolu.h"
 #include "radiance/fvect.h"	/* must preceed include of view.h */
 #include "radiance/view.h"
-// #define TT_CHECK_BOUNDS
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"
 #include "deva-license.h"

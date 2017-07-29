@@ -1,0 +1,7 @@
+version 2.2.00
+
+Added conversions, misc. cleanup to sRGB.c
+
+Added simple test case generator for Radiance files with EXPOSURE values.
+
+Added TIFF HDR to TIFF program

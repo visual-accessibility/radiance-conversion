@@ -84,3 +84,34 @@ TARGET_LINK_LIBRARIES ( rad2jpeg
 	${EXIF_LIBRARIES}
 	-lm
 	)
+
+ADD_EXECUTABLE ( make-rad-test-image make-rad-test-image.c
+	radiance-tiff.c
+	radiance-header.c
+	radiance/color.c
+	radiance/header.c
+	radiance/fputword.c
+	radiance/resolu.c
+	radiance/image.c
+	radiance/fvect.c
+	radiance/badarg.c
+	radiance/words.c
+	radiance/spec_rgb.c
+	FOV.c
+	sRGB.c
+	radiance/timegm.c
+	tifftoolsimage.c tifftools.c
+	)
+TARGET_LINK_LIBRARIES ( make-rad-test-image
+	${TIFF_LIBRARIES}
+	-lm
+	)
+
+ADD_EXECUTABLE ( tiff32_to_8 tiff32_to_8.c
+	sRGB.c
+	tifftoolsimage.c tifftools.c
+	)
+TARGET_LINK_LIBRARIES ( tiff32_to_8
+	${TIFF_LIBRARIES}
+	-lm
+	)

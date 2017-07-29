@@ -11,12 +11,14 @@
  * 8-bit RGB and grayscale files are assumed to have sRGB luminance
  * encoding regardless of whether or not there is an attached color profile
  * and ignoring the actual color profile if attached.  This is different
- * from the Radiance \fBra_tiff\fR program for these data types, which
+ * from the Radiance ra_tiff program for these data types, which
  * assumes straight gamma encoding.
  *
  * Special cased to convert TIFF equivalent 35mm focal length EXIF tag
  * value to Radiance field of view VIEW parameters.
  */
+
+// #define	TT_CHECK_BOUNDS
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,7 +27,6 @@
 #include "FOV.h"
 #include "sRGB.h"
 #include "sRGB_radiance.h"
-// #define	TT_CHECK_BOUNDS
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"
 #include "deva-license.h"
