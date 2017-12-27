@@ -1,10 +1,11 @@
-This repository contains code for converting between RADIANCE rgbe and
-xyze HDR image formats and TIFF and JPEG files.  The programs are
+This repository contains code for converting between RADIANCE rgbe
+HDR image formats and TIFF, JPEG, and PNG files.  The programs are
 support routines for the deva-filter workflow.  Somewhat similar
 functionality is provided by the RADIANCE ra_tiff program.
 
-The software can be built on either Linux or MacOS.  No Windows version
-currently exits.
+The software can be built on either Linux or MacOS.  A Windows version
+can also be cross-compiled on Linux.  Pre-compiled Windows binaries are
+in radiance-conversion/Windows-binaries.
 
 ---------------------------------------------------------------------
 
@@ -18,14 +19,29 @@ If you need to make exposure adjustment, try:
 			or
     rad2jpeg --autoadjust --exposure=-1  input.hdr output.jpg
 
-Increase or decrease the exposure adjustment as needed.
+    Increase or decrease the exposure adjustment as needed.
 
 ---------------------------------------------------------------------
 
 Documentation is in the man directory.
 
-Open source license is at "deva-license.h".
-
 This product includes Radiance software (http://radsite.lbl.gov/)
 developed by the Lawrence Berkeley National Laboratory
-(http://www.lbl.gov/).
+(http://www.lbl.gov/).  It also utilizes code for libtiff
+<http://www.simplesystems.org/libtiff/>, libjpeg <http://www.ijg.org/>,
+libexif <https://sourceforge.net/projects/libexif/files/libexif/>,
+libpng <http://www.libpng.org/pub/png/libpng.html>, and zlib
+<http://www.zlib.net/>.
+
+Open source license is at "deva-license.h".
+
+For other licenses, see:
+
+    radiance-conversion/radiance/copyright.h
+    radiance-conversion/external-libs/tiff-4.0.9/README
+    radiance-conversion/external-libs/jpeg-9b/README
+    radiance-conversion/external-libs/libexif-master/COPYING
+    radiance-conversion/external-libs/libpng-1.6.34/LICENSE
+    radiance-conversion/external-libs/zlib-1.2.11/README
+
+---------------------------------------------------------------------

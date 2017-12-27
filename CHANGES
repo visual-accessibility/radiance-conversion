@@ -1,7 +1,22 @@
-version 2.2.00
+version 3.0.00
 
-Added conversions, misc. cleanup to sRGB.c
+Added support for PNG output.
+
+Cleanup of JPEG support to reduce possibility of name clashes.
+
+Switch JPEG support to use DEVA image data structures rather than
+TIFFTOOLS image data structures.
+
+Cleanup of man pages.
+
+Added tiff conversion from 32 bit floating point to 8 bit uint.
+
+Added build for Windows using Mingw-w64 cross-compiling on Linux.
+
+version 2.1.01
+
+Added conversions, misc. cleanup to sRGB.c.
 
 Added simple test case generator for Radiance files with EXPOSURE values.
 
-Added TIFF HDR to TIFF program
+Added TIFF HDR to TIFF LDR program.

@@ -25,7 +25,7 @@
 #include "radiance-tiff.h"
 #include "radiance-header.h"
 #include "FOV.h"
-#include "sRGB.h"
+#include "TT-sRGB.h"
 #include "sRGB_radiance.h"
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"

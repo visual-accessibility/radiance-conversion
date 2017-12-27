@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "sRGB.h"
+#include "TT-sRGB.h"
 #include "radiance-tiff.h"
 #include "radiance-header.h"
 #include "radiance/color.h"

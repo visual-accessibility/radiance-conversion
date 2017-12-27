@@ -4,18 +4,20 @@
  * Radiance values from 0.0 to 1.0 remapped to 8-bit unsigned int using
  * sRGB convention.  Subtleties such as blackpoint and whitepoint are ignored.
  *
- * Ignores EXPOSURE record in Radiance header.
+ * Ignores EXPOSURE record in Radiance header, which is consistent with
+ * the Radiance convension that the numeric values in the file are what
+ * the file creator thinks are appropriately scaled for display.
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "radiance-tiff.h"
-#include "TT-jpeg.h"
-#include "FOV.h"
-#include "sRGB.h"
+#include "deva-image.h"
+#include "radianceIO.h"
+#include "DEVA-jpeg.h"
+#include "iccjpeg.h"
+#include "DEVA-sRGB.h"
 #include "sRGB_radiance.h"
-#include "tifftoolsimage.h"
 #include "radiance/color.h"
 #include "radiance-conversion-version.h"
 #include "deva-license.h"
@@ -31,9 +33,10 @@ int	args_needed = 2;
 
 #include "sRGB_IEC61966-2-1_black_scaled.c"	/* hardwired binary profile */
 
-double	find_glare_threshold ( TT_RGBf_image *image );
+double	find_glare_threshold ( DEVA_RGBf_image *image );
 double	fmax3 ( double v1, double v2, double v3 );
-void	TT_RGBf_rescale ( TT_RGBf_image *image, float new_max, float new_min );
+void	DEVA_RGBf_rescale ( DEVA_RGBf_image *image, float new_max,
+	    float new_min );
 
 int
 main ( int argc, char *argv[] )
@@ -43,9 +46,8 @@ main ( int argc, char *argv[] )
     double	    exposure_adjust = 1.0;
     int		    autoadjust_flag = FALSE;
     float	    adjust_max;
-    TT_RGBf_image   *input_image;
-    TT_RGB_image    *sRGB_image;
-    RadianceHeader  header;
+    DEVA_RGBf_image *input_image;
+    DEVA_RGB_image  *sRGB_image;
     int		    row, col;
     char	    *new_description = NULL;
     RGBPRIMS	    radiance_prims = STDPRIMS;
@@ -53,7 +55,7 @@ main ( int argc, char *argv[] )
     COLORMAT	    radrgb2sRGBmat;
     COLOR	    radiance_pixel_in;
     COLOR	    radiance_pixel_out;
-    TT_RGBf	    TT_pixel;
+    DEVA_RGBf	    DEVA_pixel;
     int		    argpt = 1;
 
     while ( ( ( argc - argpt ) >= 1 ) && ( argv[argpt][0] == '-' ) ) {
@@ -95,71 +97,74 @@ main ( int argc, char *argv[] )
 	return ( EXIT_FAILURE );        /* error return */
     }
 
-    input_image = TT_RGBf_image_from_radfilename ( argv[argpt++], &header );
+    input_image = DEVA_RGBf_image_from_radfilename ( argv[argpt++] );
 
     /* convert to sRGB primaries */
 
     comprgb2rgbWBmat ( radrgb2sRGBmat, radiance_prims, sRGB_prims );
 
-    for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
-	for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
-	    TT_pixel = TT_image_data ( input_image, row, col );
+    for ( row = 0; row < DEVA_image_n_rows ( input_image ); row++ ) {
+	for ( col = 0; col < DEVA_image_n_cols ( input_image ); col++ ) {
+	    DEVA_pixel = DEVA_image_data ( input_image, row, col );
 
-	    colval ( radiance_pixel_in, RED ) = TT_pixel.red;
-	    colval ( radiance_pixel_in, GRN ) = TT_pixel.green;
-	    colval ( radiance_pixel_in, BLU ) = TT_pixel.blue;
+	    colval ( radiance_pixel_in, RED ) = DEVA_pixel.red;
+	    colval ( radiance_pixel_in, GRN ) = DEVA_pixel.green;
+	    colval ( radiance_pixel_in, BLU ) = DEVA_pixel.blue;
 
 	    colortrans ( radiance_pixel_out, radrgb2sRGBmat,
 		    radiance_pixel_in );
 
-	    TT_pixel.red = colval ( radiance_pixel_out, RED );
-	    TT_pixel.green = colval ( radiance_pixel_out, GRN );
-	    TT_pixel.blue = colval ( radiance_pixel_out, BLU );
+	    DEVA_pixel.red = colval ( radiance_pixel_out, RED );
+	    DEVA_pixel.green = colval ( radiance_pixel_out, GRN );
+	    DEVA_pixel.blue = colval ( radiance_pixel_out, BLU );
 
-	    TT_image_data ( input_image, row, col ) = TT_pixel;
+	    DEVA_image_data ( input_image, row, col ) = DEVA_pixel;
 	}
     }
 
     if ( autoadjust_flag ) {
 	adjust_max = find_glare_threshold ( input_image );
 	if ( adjust_max > 0.0 ) {
-	    TT_RGBf_rescale ( input_image, adjust_max, 0 );
+	    DEVA_RGBf_rescale ( input_image, adjust_max, 0 );
 	}
     }
 
     if ( exposure_flag ) {
 	exposure_adjust = pow ( 2.0, exposure_stops );
-	for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
-	    for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
-		TT_image_data ( input_image, row, col ).red *= exposure_adjust;
-		TT_image_data ( input_image, row, col ).green
-		    *= exposure_adjust;
-		TT_image_data ( input_image, row, col ).blue *= exposure_adjust;
+	for ( row = 0; row < DEVA_image_n_rows ( input_image ); row++ ) {
+	    for ( col = 0; col < DEVA_image_n_cols ( input_image ); col++ ) {
+		DEVA_image_data ( input_image, row, col ).red *=
+		    					exposure_adjust;
+		DEVA_image_data ( input_image, row, col ).green *=
+		   					exposure_adjust;
+		DEVA_image_data ( input_image, row, col ).blue *=
+		    					exposure_adjust;
 	    }
 	}
     }
 
     /* convert to 8-bit/color using sRGB non-linear encoding */
-    sRGB_image = TT_RGB_image_new ( TT_image_n_rows ( input_image ),
-	    TT_image_n_cols ( input_image ) );
+    sRGB_image = DEVA_RGB_image_new ( DEVA_image_n_rows ( input_image ),
+	    DEVA_image_n_cols ( input_image ) );
 
-    for ( row = 0; row < TT_image_n_rows ( input_image ); row++ ) {
-	for ( col = 0; col < TT_image_n_cols ( input_image ); col++ ) {
-	    TT_image_data ( sRGB_image, row, col ) =
-		RGBf_to_sRGB ( TT_image_data ( input_image, row, col ) );
+    for ( row = 0; row < DEVA_image_n_rows ( input_image ); row++ ) {
+	for ( col = 0; col < DEVA_image_n_cols ( input_image ); col++ ) {
+	    DEVA_image_data ( sRGB_image, row, col ) =
+		RGBf_to_sRGB ( DEVA_image_data ( input_image, row, col ) );
 	}
     }
 
-    TT_RGB_image_to_filename_jpg ( argv[argpt++], sRGB_image, new_description );
+    DEVA_RGB_image_to_filename_jpg ( argv[argpt++], sRGB_image,
+	    new_description );
 
-    TT_RGB_image_delete ( sRGB_image );
-    TT_RGBf_image_delete ( input_image );
+    DEVA_RGB_image_delete ( sRGB_image );
+    DEVA_RGBf_image_delete ( input_image );
 
     return ( EXIT_SUCCESS );	/* normal exit */
 }
 
 double
-find_glare_threshold ( TT_RGBf_image *image )
+find_glare_threshold ( DEVA_RGBf_image *image )
 /*
  * Suggests a luminance level above which pixel should be considered
  * a glare source.  (This version uses maximum over R, G, and B, instead 
@@ -184,11 +189,11 @@ find_glare_threshold ( TT_RGBf_image *image )
 
     max_value = average_value_initial = 0.0;
 
-    for ( row = 0; row < TT_image_n_rows ( image ); row++ ) {
-	for ( col = 0; col < TT_image_n_cols ( image ); col++ ) {
-	    max_pixel_value = fmax3 ( TT_image_data (image, row, col ) . red,
-		    TT_image_data (image, row, col ) . green,
-		    TT_image_data (image, row, col ) . blue );
+    for ( row = 0; row < DEVA_image_n_rows ( image ); row++ ) {
+	for ( col = 0; col < DEVA_image_n_cols ( image ); col++ ) {
+	    max_pixel_value = fmax3 ( DEVA_image_data (image, row, col ) . red,
+		    DEVA_image_data (image, row, col ) . green,
+		    DEVA_image_data (image, row, col ) . blue );
 	    if ( max_value < max_pixel_value ) {
 		max_value = max_pixel_value;
 	    }
@@ -198,8 +203,8 @@ find_glare_threshold ( TT_RGBf_image *image )
     }
 
     average_value_initial /=
-	( ((double) TT_image_n_rows ( image ) ) *
-	    ((double) TT_image_n_cols ( image ) ) );
+	( ((double) DEVA_image_n_rows ( image ) ) *
+	    ((double) DEVA_image_n_cols ( image ) ) );
     glare_cutoff_initial = GLARE_LEVEL_RATIO * average_value_initial;
 
     if ( glare_cutoff_initial >= max_value ) {
@@ -209,11 +214,11 @@ find_glare_threshold ( TT_RGBf_image *image )
 
     max_value = 0.0;
 
-    for ( row = 0; row < TT_image_n_rows ( image ); row++ ) {
-	for ( col = 0; col < TT_image_n_cols ( image ); col++ ) {
-	    max_pixel_value = fmax3 ( TT_image_data (image, row, col ) . red,
-		    TT_image_data (image, row, col ) . green,
-		    TT_image_data (image, row, col ) . blue );
+    for ( row = 0; row < DEVA_image_n_rows ( image ); row++ ) {
+	for ( col = 0; col < DEVA_image_n_cols ( image ); col++ ) {
+	    max_pixel_value = fmax3 ( DEVA_image_data (image, row, col ) . red,
+		    DEVA_image_data (image, row, col ) . green,
+		    DEVA_image_data (image, row, col ) . blue );
 	    if ( max_pixel_value <= glare_cutoff_initial ) {
 		if ( max_value < max_pixel_value ) {
 		    max_value = max_pixel_value;
@@ -232,7 +237,7 @@ fmax3 ( double v1, double v2, double v3 )
 }
 
 void
-TT_RGBf_rescale ( TT_RGBf_image *image, float new_max, float new_min )
+DEVA_RGBf_rescale ( DEVA_RGBf_image *image, float new_max, float new_min )
 {
     int	    row, col;
     int	    n_rows, n_cols;
@@ -241,28 +246,30 @@ TT_RGBf_rescale ( TT_RGBf_image *image, float new_max, float new_min )
     double  old_min_red, old_min_green, old_min_blue;
     double  rescale;
 
-    n_rows = TT_image_n_rows ( image );
-    n_cols = TT_image_n_cols ( image );
+    n_rows = DEVA_image_n_rows ( image );
+    n_cols = DEVA_image_n_cols ( image );
 
-    old_max_red = old_min_red = TT_image_data ( image, 0, 0 ).red;
-    old_max_green = old_min_green = TT_image_data ( image, 0, 0 ).green;
-    old_max_blue = old_min_blue = TT_image_data ( image, 0, 0 ).blue;
+    old_max_red = old_min_red = DEVA_image_data ( image, 0, 0 ).red;
+    old_max_green = old_min_green = DEVA_image_data ( image, 0, 0 ).green;
+    old_max_blue = old_min_blue = DEVA_image_data ( image, 0, 0 ).blue;
 
     for ( row = 0; row < n_rows; row++ ) {
 	for ( col = 0; col < n_cols; col++ ) {
 	    old_max_red =
-		fmax ( old_max_red, TT_image_data ( image, row, col ).red );
+		fmax ( old_max_red, DEVA_image_data ( image, row, col ).red );
 	    old_max_green =
-		fmax ( old_max_green, TT_image_data ( image, row, col ).green );
+		fmax ( old_max_green,
+			DEVA_image_data ( image, row, col ).green );
 	    old_max_blue =
-		fmax ( old_max_blue, TT_image_data ( image, row, col ).blue );
+		fmax ( old_max_blue, DEVA_image_data ( image, row, col ).blue );
 
 	    old_min_red =
-		fmin ( old_min_red, TT_image_data ( image, row, col ).red );
+		fmin ( old_min_red, DEVA_image_data ( image, row, col ).red );
 	    old_min_green =
-		fmin ( old_min_green, TT_image_data ( image, row, col ).green );
+		fmin ( old_min_green,
+			DEVA_image_data ( image, row, col ).green );
 	    old_min_blue =
-		fmin ( old_min_blue, TT_image_data ( image, row, col ).blue );
+		fmin ( old_min_blue, DEVA_image_data ( image, row, col ).blue );
 	}
     }
 
@@ -271,13 +278,13 @@ TT_RGBf_rescale ( TT_RGBf_image *image, float new_max, float new_min )
 
     if ( old_max == old_min ) {
 	fprintf ( stderr,
-		"TT_RGBf_rescale: no variability in values (warning)\n" );
+		"DEVA_RGBf_rescale: no variability in values (warning)\n" );
 
 	for ( row = 0; row < n_rows; row++ ) {
 	    for ( col = 0; col < n_cols; col++ ) {
-		TT_image_data ( image, row, col ).red =
-		    TT_image_data ( image, row, col ).green =
-		    TT_image_data ( image, row, col ).blue =
+		DEVA_image_data ( image, row, col ).red =
+		    DEVA_image_data ( image, row, col ).green =
+		    DEVA_image_data ( image, row, col ).blue =
 		   	 0.5 * ( new_max + new_min );
 	    }
 	}
@@ -288,14 +295,14 @@ TT_RGBf_rescale ( TT_RGBf_image *image, float new_max, float new_min )
 
     for ( row = 0; row < n_rows; row++ ) {
 	for ( col = 0; col < n_cols; col++ ) {
-	    TT_image_data ( image, row, col ).red = ( rescale *
-		    ( TT_image_data ( image, row, col ).red - old_min ) ) +
+	    DEVA_image_data ( image, row, col ).red = ( rescale *
+		    ( DEVA_image_data ( image, row, col ).red - old_min ) ) +
 				new_min;
-	    TT_image_data ( image, row, col ).green = ( rescale *
-		    ( TT_image_data ( image, row, col ).green - old_min ) ) +
+	    DEVA_image_data ( image, row, col ).green = ( rescale *
+		    ( DEVA_image_data ( image, row, col ).green - old_min ) ) +
 				new_min;
-	    TT_image_data ( image, row, col ).blue = ( rescale *
-		    ( TT_image_data ( image, row, col ).blue - old_min ) ) +
+	    DEVA_image_data ( image, row, col ).blue = ( rescale *
+		    ( DEVA_image_data ( image, row, col ).blue - old_min ) ) +
 				new_min;
 	}
     }

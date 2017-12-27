@@ -17,11 +17,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "sRGB.h"
+#include "TT-sRGB.h"
 #include "tifftoolsimage.h"
 #include "deva-license.h"
 
-char	*Usage = "tiff32_to_8 [--linear] input.tif output.hdr";
+char	*Usage = "tiff32_to_8 [--linear] [--offset] input.tif output.hdr";
 int	args_needed = 2;
 
 int

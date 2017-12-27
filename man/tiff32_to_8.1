@@ -1,0 +1,25 @@
+.TH TIFF32_to_8 1 "22 December 2017" "DEVA Project"
+.SH NAME
+tiff8_to_32 \- convert Radiance file to a TIFF file
+.SH SYNOPSIS
+\." \fBtiff8_to_32\fR [--linear] [--offset] input.tiff output.tif
+\fBtiff8_to_32\fR [\fIoptions\fR] \fIinput.tif\fR | \- \fIoutput.tif\fR
+.SH DESCRIPTION
+Convert TIFF file floating point file to TIFF 8-bit file, assuming that
+the floating point values are scaled to the range [0.0-1.0].  8-bit
+output images use sRGB luminance enconding unless the \fI\-\-linear\fB
+flag is given.
+.SH OPTIONS
+.TP
+\fB\-\-linear\fR
+Linearly scale the floating point values to 8-bit integer values.
+.TP
+\fB\-\-offset\fR
+Add 0.5 to floating point before conversion to 8-bit integer values to
+help with displaying negative values.  Only works for single channel
+input images.
+.SH LIMITATIONS
+Needs \fI\-\-exposure\fR, \fI\-\-autoadjust\fR, and lots of other bells
+and whistles.
+.SH AUTHOR
+William B. Thompson

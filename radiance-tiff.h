@@ -1,8 +1,7 @@
 /*
  * Routines for reading and writing Radiance image files.
  *
- * Header information, including fov, returned on read.  Header information
- * on write not yet implemented.
+ * Header information, including fov, returned on read and writen on write.
  */
 
 #ifndef __TT_RADIANCEIO_H

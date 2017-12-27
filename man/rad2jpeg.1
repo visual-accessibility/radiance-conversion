@@ -8,6 +8,14 @@ rad2jpeg \- convert Radiance file to a JPEG file
 .SH DESCRIPTION
 Convert Radiance file to a JPEG file.  The input can optionally be "\-",
 indicating that the input image should be read from standard input.
+.PP
+Output uses sRGB primaries and sRGB non-linear magnitude encoding.  This
+is different from the Radiance conversion programs such as ra_tiff,
+which use Radiance primaries and straight gamma non-linear magnitude
+encoding.  The non-linear sRGB luminance encoding will generally result
+in more accurate color rendition on modern displays than does the
+gamma-based Radiance encoding.  Conversion to sRGB color primaries
+typically has has little or no visual effect.
 .SH OPTIONS
 .TP
 \fB\-\-exposure=\fIstop\fR

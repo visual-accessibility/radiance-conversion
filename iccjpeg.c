@@ -50,7 +50,7 @@
  */
 
 void
-write_icc_profile (j_compress_ptr cinfo,
+jpeg_write_icc_profile (j_compress_ptr cinfo,
 		   const JOCTET *icc_data_ptr,
 		   unsigned int icc_data_len)
 {
@@ -110,7 +110,7 @@ write_icc_profile (j_compress_ptr cinfo,
  */
 
 void
-setup_read_icc_profile (j_decompress_ptr cinfo)
+jpeg_setup_read_icc_profile (j_decompress_ptr cinfo)
 {
   /* Tell the library to keep any APP2 data it may find */
   jpeg_save_markers(cinfo, ICC_MARKER, 0xFFFF);
@@ -122,7 +122,7 @@ setup_read_icc_profile (j_decompress_ptr cinfo)
  */
 
 static boolean
-marker_is_icc (jpeg_saved_marker_ptr marker)
+jpeg_marker_is_icc (jpeg_saved_marker_ptr marker)
 {
   return
     marker->marker == ICC_MARKER &&
@@ -163,7 +163,7 @@ marker_is_icc (jpeg_saved_marker_ptr marker)
  */
 
 boolean
-read_icc_profile (j_decompress_ptr cinfo,
+jpeg_read_icc_profile (j_decompress_ptr cinfo,
 		  JOCTET **icc_data_ptr,
 		  unsigned int *icc_data_len)
 {
@@ -188,7 +188,7 @@ read_icc_profile (j_decompress_ptr cinfo,
     marker_present[seq_no] = 0;
 
   for (marker = cinfo->marker_list; marker != NULL; marker = marker->next) {
-    if (marker_is_icc(marker)) {
+    if (jpeg_marker_is_icc(marker)) {
       if (num_markers == 0)
 	num_markers = GETJOCTET(marker->data[13]);
       else if (num_markers != GETJOCTET(marker->data[13]))
@@ -228,7 +228,7 @@ read_icc_profile (j_decompress_ptr cinfo,
 
   /* and fill it in */
   for (marker = cinfo->marker_list; marker != NULL; marker = marker->next) {
-    if (marker_is_icc(marker)) {
+    if (jpeg_marker_is_icc(marker)) {
       JOCTET FAR *src_ptr;
       JOCTET *dst_ptr;
       unsigned int length;
