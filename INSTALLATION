@@ -1,95 +1,118 @@
 ---------------------------------------------------------------------
 To build the software for Linux:
 
-1. Install the packages cmake, libtiff, libtiff-devel, libjpeg8,
-   libjpeg8-devel, libexif12, libexif-devel, libpng16-16, and
-   libpng16-devel from the appropriate repository.  (Other versions of
-   libjpeg may work as well.)
+1.  Install the packages cmake, libtiff, libtiff-devel, libjpeg8,
+    libjpeg8-devel, libexif12, libexif-devel, libpng16-16, and
+    libpng16-devel from the appropriate repository.  (Other versions of
+    libjpeg may work as well.)
 
-2. Run the following commands from the top level of the
-   radiance-conversion directory tree:
+2.  Run the following commands from the top level of the
+    radiance-conversion directory tree:
 
-     cd build
-     cmake ..
-     make
-     cd ..
+      cd build
+      cmake ..
+      make
+      cd ..
 
-3. Copy the executalbe files rad2jpeg rad2png rad2tiff tiff2rad
-   tiff32_to_8 from radiance-conversion/build to wherever you want them.
+3.  Copy the executable files rad2jpeg rad2png rad2tiff tiff2rad
+    tiff32_to_8 from radiance-conversion/build to wherever you want them.
+
+4.  To remove everything generated in the build process, run the
+    following command from top level of radiance-conversion source
+    directory:
+
+      distclean
 
 ---------------------------------------------------------------------
 To build the software for MacOS:
 
-1. Install the package CMake <http://www.cmake.org/>
+1.  Install cmake, libtiff, libjpeg8, libexif12, and libpng16-16 from
+    the appropriate repositories.  Other versions of libjpeg may work as
+    well.  Libtiff and libpng should both install zlib if it is not
+    already there.  If for some reason this does not happen, zlib will
+    also have to be explicitly installed.
 
-   Download and unpack Unix/Linux source from
-   <http://www.cmake.org/download/>.
+    If all packages can be found and installed, go to step 8.  If one or
+    more packages needs to be built from sources, see steps 2-7 as
+    needed.
 
-   In directory where source has been unpacked:
+2.  Install the package CMake <http://www.cmake.org/>
 
-   ./bootstrap
-   make
-   sudo make install
+    Download and unpack Unix/Linux source from
+    <http://www.cmake.org/download/>.
 
-2. Install the package libtiff <http://www.simplesystems.org/libtiff/>
-   (this URL changes periodically!)
+    In directory where source has been unpacked:
 
-   Download and unpack the latest stable release of libtiff from
-   <ftp://download.osgeo.org/libtiff/tiff-4.0.7.zip>.
+      ./bootstrap
+      make
+      sudo make install
 
-   In directory where source has been unpacked:
+3.  Install the package libtiff <http://www.simplesystems.org/libtiff/>
+    (this URL changes periodically!)
 
-   ./configure
-   make
-   sudo make install 
+    Download and unpack the latest stable release of libtiff from
+    <ftp://download.osgeo.org/libtiff/tiff-4.0.7.zip>.
 
-3. Install the package libjpeg from <http://www.ijg.org/> or another
-   source of your choosing. (A long term format war is underway between
-   different JPEG groups.  We take no position on which flavor is best
-   to uses.)
+    In directory where source has been unpacked:
 
-   In directory where source has been unpacked:
+      ./configure
+      make
+      sudo make install 
 
-   ./configure
-   make
-   sudo make install 
+4.  Install the package libjpeg from <http://www.ijg.org/> or another
+    source of your choosing. (A long term format war is underway between
+    different JPEG groups.  We take no position on which flavor is best
+    to uses.)
 
-4. Install the package libexif from
-   <https://sourceforge.net/projects/libexif/files/libexif/>
+    In directory where source has been unpacked:
 
-   In directory where source has been unpacked:
+      ./configure
+      make
+      sudo make install 
 
-   ./configure
-   make
-   sudo make install 
+5.  Install the package libexif from
+    <https://sourceforge.net/projects/libexif/files/libexif/>
 
-5. Install the package zlib from <http://www.zlib.net/>.
+    In directory where source has been unpacked:
 
-   In directory where source has been unpacked:
+      ./configure
+      make
+      sudo make install 
 
-   ./configure
-   make
-   sudo make install 
+6.  Install the package zlib from <http://www.zlib.net/>.
 
-6. Install the package libpng from
-   <http://www.libpng.org/pub/png/libpng.html>.
+    In directory where source has been unpacked:
 
-   In directory where source has been unpacked:
+      ./configure
+      make
+      sudo make install 
 
-   ./configure
-   make
-   sudo make install 
+7.  Install the package libpng from
+    <http://www.libpng.org/pub/png/libpng.html>.
 
-7. Run the following commands from the top level of the
-   radiance-conversion directory tree:
+    In directory where source has been unpacked:
 
-     cd build
-     cmake ..
-     make
-     cd ..
+      ./configure
+      make
+      sudo make install 
 
-8. Copy the executalbe files rad2jpeg rad2png rad2tiff tiff2rad
-   tiff32_to_8 from radiance-conversion/build to wherever you want them.
+8.  Run the following commands from the top level of the
+    radiance-conversion directory tree:
+
+      cd build
+      cmake ..
+      make
+      cd ..
+
+9.  Copy the executable files rad2jpeg rad2png rad2tiff tiff2rad
+    tiff32_to_8 from radiance-conversion/build to wherever you want
+    them.
+
+10. To remove everything generated in the build process, run the
+    following command from top level of radiance-conversion source
+    directory:
+
+      distclean
 
 ---------------------------------------------------------------------
 To build the software for Windows:
@@ -112,117 +135,121 @@ fixed place and list the folder in your PATH variable.
 
 To build the Windows software by cross compiling on Linux:
 
-1. On the Linux system, install the packages cmake and mingw64-cross-gcc.
+1.  On the Linux system, install the packages cmake and mingw64-cross-gcc.
 
-2. From top level of radiance-conversion source directory:
+2.  Run the following command from top level of radiance-conversion
+    source directory:
 
-    Windows-build-script
+      Windows-build-script
 
-3. Copy the files rad2jpeg.exe rad2png rad2tiff tiff2rad tiff32_to_8.exe
-   from radiance-conversion/build-windows to wherever you want them.
+3.  Copy the files rad2jpeg.exe rad2png rad2tiff tiff2rad
+    tiff32_to_8.exe from radiance-conversion/build-windows to wherever
+    you want them.
 
-4. To remove everything generated in the build process:
+4.  To remove everything generated in the build process, run the
+    following command from top level of radiance-conversion source
+    directory:
 
-    From top level of radiance-conversion source directory:
-
-    distclean.
+      distclean
 
 If something goes wrong with the build script, you can try building step
 by step using to following commands.  (Best to do a distclean before
 trying this.)
 
-1. On the Linux system, install the packages cmake and mingw64-cross-gcc.
+1.  On the Linux system, install the packages cmake and
+    mingw64-cross-gcc.
 
-2. Build libz.a
-
-    From top level of radiance-conversion source directory:
-
-    cd external-libs/zlib-1.2.11
-    make PREFIX=x86_64-w64-mingw32- -fwin32/Makefile.gcc
-    make BINARY_PATH=$PWD/../bin \
-    	INCLUDE_PATH=$PWD/../include \
-    	LIBRARY_PATH=$PWD/../lib64 -fwin32/Makefile.gcc install
-    cd ../..
-
-3. Build libpng.a
+2.  Build libz.a
 
     From top level of radiance-conversion source directory:
 
-    cd external-libs/libpng-1.6.34
-    ./configure \
-	--host=x86_64-w64-mingw32 \
-	--build=x86_64-suse-linux-gnu \
-	--target=x86_64-w64-mingw32 \
-	--enable-static \
-	--disable-shared \
-	--prefix=$PWD/.. \
-	CPPFLAGS=-I$PWD/../include \
-	LDFLAGS=-L$PWD/../lib64
-    make
-    make install
-    cd ../..
+      cd external-libs/zlib-1.2.11
+      make PREFIX=x86_64-w64-mingw32- -fwin32/Makefile.gcc
+      make BINARY_PATH=$PWD/../bin \
+    	  INCLUDE_PATH=$PWD/../include \
+    	  LIBRARY_PATH=$PWD/../lib64 -fwin32/Makefile.gcc install
+      cd ../..
 
-4. Build libjpeg.a
+3.  Build libpng.a
 
     From top level of radiance-conversion source directory:
 
-    cd external-libs/jpeg-9b
-    ./configure \
-	--host=x86_64-w64-mingw32 \
-	--build=x86_64-suse-linux-gnu \
-	--target=x86_64-w64-mingw32 \
-	--enable-static \
-	--disable-shared \
-	--prefix=$PWD/..
-    make
-    make install
-    cd ../..
+      cd external-libs/libpng-1.6.34
+      ./configure \
+	  --host=x86_64-w64-mingw32 \
+	  --build=x86_64-suse-linux-gnu \
+	  --target=x86_64-w64-mingw32 \
+	  --enable-static \
+	  --disable-shared \
+	  --prefix=$PWD/.. \
+	  CPPFLAGS=-I$PWD/../include \
+	  LDFLAGS=-L$PWD/../lib64
+      make
+      make install
+      cd ../..
 
-5. Build libexif.a
-
-    From top level of radiance-conversion source directory:
-
-    cd external-libs/libexif-master
-    ./configure \
-	--host=x86_64-w64-mingw32 \
-	--build=x86_64-suse-linux-gnu \
-	--target=x86_64-w64-mingw32 \
-	--enable-static \
-	--disable-shared \
-	--prefix=$PWD/.. \
-	--disable-nls
-    make
-    make install
-    cd ../..
-
-6. Build libtiff.a
+4.  Build libjpeg.a
 
     From top level of radiance-conversion source directory:
 
-    cd external-libs/tiff-4.0.9/build-windows
-    cmake -DCMAKE_TOOLCHAIN_FILE=../../Windows-toolchain.cmake \
-    	-DBUILD_SHARED_LIBS=OFF \
-	-Djpeg=ON \
-	-DCMAKE_INSTALL_PREFIX=${PWD}/../../ \
-	..
-    make
-    make install
-    cd ../../..
+      cd external-libs/jpeg-9b
+      ./configure \
+	  --host=x86_64-w64-mingw32 \
+	  --build=x86_64-suse-linux-gnu \
+	  --target=x86_64-w64-mingw32 \
+	  --enable-static \
+	  --disable-shared \
+	  --prefix=$PWD/..
+      make
+      make install
+      cd ../..
 
-7. Build rad2jpeg rad2png rad2tiff tiff2rad tiff32_to_8
-
-    From top level of radiance-conversion source directory:
-
-    cd build-windows
-    cmake -DCMAKE_TOOLCHAIN_FILE=../Windows-toolchain.cmake ..
-    make
-    cd ..
-
-8. Copy the files rad2jpeg.exe rad2png rad2tiff tiff2rad tiff32_to_8.exe
-   from radiance-conversion/build-windows to wherever you want them.
-
-9. To remove everything generated in the build process:
+5.  Build libexif.a
 
     From top level of radiance-conversion source directory:
 
-    distclean
+      cd external-libs/libexif-master
+      ./configure \
+	  --host=x86_64-w64-mingw32 \
+	  --build=x86_64-suse-linux-gnu \
+	  --target=x86_64-w64-mingw32 \
+	  --enable-static \
+	  --disable-shared \
+	  --prefix=$PWD/.. \
+	  --disable-nls
+      make
+      make install
+      cd ../..
+
+6.  Build libtiff.a
+
+    From top level of radiance-conversion source directory:
+
+      cd external-libs/tiff-4.0.9/build-windows
+      cmake -DCMAKE_TOOLCHAIN_FILE=../../Windows-toolchain.cmake \
+    	  -DBUILD_SHARED_LIBS=OFF \
+	  -Djpeg=ON \
+	  -DCMAKE_INSTALL_PREFIX=${PWD}/../../ \
+	  ..
+      make
+      make install
+      cd ../../..
+
+7.  Build rad2jpeg rad2png rad2tiff tiff2rad tiff32_to_8
+
+    From top level of radiance-conversion source directory:
+
+      cd build-windows
+      cmake -DCMAKE_TOOLCHAIN_FILE=../Windows-toolchain.cmake ..
+      make
+      cd ..
+
+8.  Copy the files rad2jpeg.exe rad2png rad2tiff tiff2rad
+    tiff32_to_8.exe from radiance-conversion/build-windows to wherever
+    you want them.
+
+9.  To remove everything generated in the build process, run the
+    following command from top level of radiance-conversion source
+    directory:
+
+      distclean

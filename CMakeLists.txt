@@ -10,8 +10,6 @@ else ( )
   set ( CMAKE_C_FLAGS "-Wall -g -O2" )
 endif ( )
 
-ADD_DEFINITIONS ( -Wall -g -O2 )
-
 if ( CMAKE_SYSTEM_NAME STREQUAL "Windows" )
   include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindPNG_Windows.cmake )
   include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Windows.cmake )
