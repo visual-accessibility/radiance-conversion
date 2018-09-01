@@ -1,3 +1,5 @@
+# DEVA version of CMake build for libtiff
+#
 # CMake build for libtiff
 # Run "cmake" to generate the build files for your platform
 #
@@ -504,8 +506,18 @@ set(MDI_SUPPORT ${mdi})
 # ZLIB
 option(zlib "use zlib (required for Deflate compression)" ON)
 if (zlib)
-  # find_package(ZLIB)
-  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindZLIB_Windows_forTIFF.cmake )
+  if ( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
+    # Linux
+    find_package(ZLIB)
+  endif()
+  elseif ( CMAKE_SYSTEM_NAME STREQUAL "Apple" )
+    # MacOS
+    include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindZLIB_Mac_forTIFF.cmake )
+  elseif ( CMAKE_SYSTEM_NAME STREQUAL "Windows" )
+    # Windows
+    include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindZLIB_Windows_forTIFF.cmake )
+  else()
+    message( FATAL_ERROR "Unknown CMAKE_SYSTEM_NAME" )
 endif()
 set(ZLIB_SUPPORT 0)
 if(ZLIB_FOUND)
@@ -526,8 +538,18 @@ endif()
 # JPEG
 option(jpeg "use libjpeg (required for JPEG compression)" ON)
 if (jpeg)
-  # find_package(JPEG)
-  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Windows_forTIFF.cmake )
+  if ( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
+    # Linux
+    find_package(JPEG)
+  endif()
+  elseif ( CMAKE_SYSTEM_NAME STREQUAL "Apple" )
+    # MacOS
+    include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Mac_forTIFF.cmake )
+  elseif ( CMAKE_SYSTEM_NAME STREQUAL "Windows" )
+    # Windows
+    include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Windows_forTIFF.cmake )
+  else()
+    message( FATAL_ERROR "Unknown CMAKE_SYSTEM_NAME" )
 endif()
 set(JPEG_SUPPORT FALSE)
 if(JPEG_FOUND)

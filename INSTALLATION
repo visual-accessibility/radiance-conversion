@@ -12,244 +12,79 @@ To build the software for Linux:
       cd build
       cmake ..
       make
-      cd ..
 
 3.  Copy the executable files rad2jpeg rad2png rad2tiff tiff2rad
-    tiff32_to_8 from radiance-conversion/build to wherever you want them.
+    tiff32_to_8 from radiance-conversion/build to wherever you want
+    them.
 
 4.  To remove everything generated in the build process, run the
-    following command from top level of radiance-conversion source
-    directory:
+    following command from top level of deva-filter source directory:
 
       distclean
 
 ---------------------------------------------------------------------
 To build the software for MacOS:
 
-1.  Install cmake, libtiff, libjpeg8, libexif12, and libpng16-16 from
-    the appropriate repositories.  Other versions of libjpeg may work as
-    well.  Libtiff and libpng should both install zlib if it is not
-    already there.  If for some reason this does not happen, zlib will
-    also have to be explicitly installed.
-
-    If all packages can be found and installed, go to step 8.  If one or
-    more packages needs to be built from sources, see steps 2-7 as
-    needed.
-
-2.  Install the package CMake <http://www.cmake.org/>
+1.  Install the package CMake <http://www.cmake.org/>
 
     Download and unpack Unix/Linux source from
     <http://www.cmake.org/download/>.
 
-    In directory where source has been unpacked:
+    In directory where the CMake source has been unpacked:
 
       ./bootstrap
       make
       sudo make install
 
-3.  Install the package libtiff <http://www.simplesystems.org/libtiff/>
-    (this URL changes periodically!)
+2.  In directory where source has been unpacked, run the script:
 
-    Download and unpack the latest stable release of libtiff from
-    <ftp://download.osgeo.org/libtiff/tiff-4.0.7.zip>.
+      Mac-build-script
 
-    In directory where source has been unpacked:
-
-      ./configure
-      make
-      sudo make install 
-
-4.  Install the package libjpeg from <http://www.ijg.org/> or another
-    source of your choosing. (A long term format war is underway between
-    different JPEG groups.  We take no position on which flavor is best
-    to uses.)
-
-    In directory where source has been unpacked:
-
-      ./configure
-      make
-      sudo make install 
-
-5.  Install the package libexif from
-    <https://sourceforge.net/projects/libexif/files/libexif/>
-
-    In directory where source has been unpacked:
-
-      ./configure
-      make
-      sudo make install 
-
-6.  Install the package zlib from <http://www.zlib.net/>.
-
-    In directory where source has been unpacked:
-
-      ./configure
-      make
-      sudo make install 
-
-7.  Install the package libpng from
-    <http://www.libpng.org/pub/png/libpng.html>.
-
-    In directory where source has been unpacked:
-
-      ./configure
-      make
-      sudo make install 
-
-8.  Run the following commands from the top level of the
-    radiance-conversion directory tree:
-
-      cd build
-      cmake ..
-      make
-      cd ..
-
-9.  Copy the executable files rad2jpeg rad2png rad2tiff tiff2rad
+3.  Copy the executable files rad2jpeg, rad2png, rad2tiff, tiff2rad, and
     tiff32_to_8 from radiance-conversion/build to wherever you want
     them.
 
-10. To remove everything generated in the build process, run the
-    following command from top level of radiance-conversion source
-    directory:
+4.  To remove everything generated in the build process, run the
+    following command from top level of deva-filter source directory:
 
       distclean
 
 ---------------------------------------------------------------------
 To build the software for Windows:
 
-Currently, the only supported build for Windows involves cross compiling
-on a Linux systems using Mingw-w64.  This approach can probably be
-adapted to MacOS.  A native Windows build is also probably doable with
-some work if you have Cmake and Mingw-w64 running on Windows.
+Currently, the only supported build for Windows targets involves cross
+compiling on a Linux systems using Mingw-w64.  This approach can
+probably be adapted to MacOS.  A native Windows build is also probably
+doable with some work if you have Cmake and Mingw-w64 running on
+Windows.
 
-As with (almost all) of the Radiance package, the Windows build results
-in programs that have no GUI and must be executed from a command line
-window.
+As currently structured, the Windows build produces a directly
+executable versions of deva-filter, deva-visibility,
+make-coordinates-file, deva-visualize-geometry, and
+deva-compare-boundaries.  No installer or special permisions are
+required.  On the other hand, you'll need to put deva-filter.exe in
+whatever current directory you have for the command window or put the
+.exe file in some fixed place and list the folder in your PATH variable.
 
-As currently structured, the Windows build produces directly executable
-versions of the radiance conversion programs.  No installer or special
-permisions are required.  On the other hand, you'll need to use the full
-patch for the .exe files, put the .exe files in whatever current
-directory you have for the command window, or put the .exe files in some
-fixed place and list the folder in your PATH variable.
+Text annotation of files output by deva-compare-boundaries is currently
+not supported on Windows.
 
 To build the Windows software by cross compiling on Linux:
-
-1.  On the Linux system, install the packages cmake and mingw64-cross-gcc.
-
-2.  Run the following command from top level of radiance-conversion
-    source directory:
-
-      Windows-build-script
-
-3.  Copy the files rad2jpeg.exe rad2png rad2tiff tiff2rad
-    tiff32_to_8.exe from radiance-conversion/build-windows to wherever
-    you want them.
-
-4.  To remove everything generated in the build process, run the
-    following command from top level of radiance-conversion source
-    directory:
-
-      distclean
-
-If something goes wrong with the build script, you can try building step
-by step using to following commands.  (Best to do a distclean before
-trying this.)
 
 1.  On the Linux system, install the packages cmake and
     mingw64-cross-gcc.
 
-2.  Build libz.a
+2.  In directory where source has been unpacked, run the script:
 
-    From top level of radiance-conversion source directory:
+      Windows-build-script
 
-      cd external-libs/zlib-1.2.11
-      make PREFIX=x86_64-w64-mingw32- -fwin32/Makefile.gcc
-      make BINARY_PATH=$PWD/../bin \
-    	  INCLUDE_PATH=$PWD/../include \
-    	  LIBRARY_PATH=$PWD/../lib64 -fwin32/Makefile.gcc install
-      cd ../..
+3.  Copy the executable files deva-filter, deva-visibility,
+    make-coordinates-file, deva-visualize-geometry,
+    deva-compare-boundaries, luminance-boundaries, and
+    geometry-boundaries from the build directory to wherever you want
+    them.
 
-3.  Build libpng.a
-
-    From top level of radiance-conversion source directory:
-
-      cd external-libs/libpng-1.6.34
-      ./configure \
-	  --host=x86_64-w64-mingw32 \
-	  --build=x86_64-suse-linux-gnu \
-	  --target=x86_64-w64-mingw32 \
-	  --enable-static \
-	  --disable-shared \
-	  --prefix=$PWD/.. \
-	  CPPFLAGS=-I$PWD/../include \
-	  LDFLAGS=-L$PWD/../lib64
-      make
-      make install
-      cd ../..
-
-4.  Build libjpeg.a
-
-    From top level of radiance-conversion source directory:
-
-      cd external-libs/jpeg-9b
-      ./configure \
-	  --host=x86_64-w64-mingw32 \
-	  --build=x86_64-suse-linux-gnu \
-	  --target=x86_64-w64-mingw32 \
-	  --enable-static \
-	  --disable-shared \
-	  --prefix=$PWD/..
-      make
-      make install
-      cd ../..
-
-5.  Build libexif.a
-
-    From top level of radiance-conversion source directory:
-
-      cd external-libs/libexif-master
-      ./configure \
-	  --host=x86_64-w64-mingw32 \
-	  --build=x86_64-suse-linux-gnu \
-	  --target=x86_64-w64-mingw32 \
-	  --enable-static \
-	  --disable-shared \
-	  --prefix=$PWD/.. \
-	  --disable-nls
-      make
-      make install
-      cd ../..
-
-6.  Build libtiff.a
-
-    From top level of radiance-conversion source directory:
-
-      cd external-libs/tiff-4.0.9/build-windows
-      cmake -DCMAKE_TOOLCHAIN_FILE=../../Windows-toolchain.cmake \
-    	  -DBUILD_SHARED_LIBS=OFF \
-	  -Djpeg=ON \
-	  -DCMAKE_INSTALL_PREFIX=${PWD}/../../ \
-	  ..
-      make
-      make install
-      cd ../../..
-
-7.  Build rad2jpeg rad2png rad2tiff tiff2rad tiff32_to_8
-
-    From top level of radiance-conversion source directory:
-
-      cd build-windows
-      cmake -DCMAKE_TOOLCHAIN_FILE=../Windows-toolchain.cmake ..
-      make
-      cd ..
-
-8.  Copy the files rad2jpeg.exe rad2png rad2tiff tiff2rad
-    tiff32_to_8.exe from radiance-conversion/build-windows to wherever
-    you want them.
-
-9.  To remove everything generated in the build process, run the
-    following command from top level of radiance-conversion source
-    directory:
+4.  To remove everything generated in the build process, run the
+    following command from top level of deva-filter source directory:
 
       distclean

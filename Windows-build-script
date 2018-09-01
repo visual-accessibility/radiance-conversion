@@ -1,12 +1,18 @@
-#! /bin/sh
+#! /bin/bash
+
+./distclean	# This will remove Windows, Mac, and Linux builds, but
+		# it's the most reliable way to insure that the CMake
+		# caches are cleaned
 
 # Build libz.a
 
     cd external-libs/zlib-1.2.11
     make PREFIX=x86_64-w64-mingw32- -fwin32/Makefile.gcc
-    make BINARY_PATH=$PWD/../bin \
-    	INCLUDE_PATH=$PWD/../include \
-    	LIBRARY_PATH=$PWD/../lib64 -fwin32/Makefile.gcc install
+    make BINARY_PATH=$PWD/../windowsinstall/bin \
+    	INCLUDE_PATH=$PWD/../windowsinstall/include \
+    	LIBRARY_PATH=$PWD/../windowsinstall/lib64 \
+	-fwin32/Makefile.gcc \
+		install
     cd ../..
 
 # Build libpng.a
@@ -18,9 +24,9 @@
 	--target=x86_64-w64-mingw32 \
 	--enable-static \
 	--disable-shared \
-	--prefix=$PWD/.. \
-	CPPFLAGS=-I$PWD/../include \
-	LDFLAGS=-L$PWD/../lib64
+	--prefix=$PWD/../windowsinstall \
+	CPPFLAGS=-I$PWD/../windowsinstall/include \
+	LDFLAGS=-L$PWD/../windowsinstall/lib64
     make
     make install
     cd ../..
@@ -34,7 +40,7 @@
 	--target=x86_64-w64-mingw32 \
 	--enable-static \
 	--disable-shared \
-	--prefix=$PWD/..
+	--prefix=$PWD/../windowsinstall
     make
     make install
     cd ../..
@@ -48,7 +54,7 @@
 	--target=x86_64-w64-mingw32 \
 	--enable-static \
 	--disable-shared \
-	--prefix=$PWD/.. \
+	--prefix=$PWD/../windowsinstall \
 	--disable-nls
     make
     make install
@@ -60,7 +66,7 @@
     cmake -DCMAKE_TOOLCHAIN_FILE=../../Windows-toolchain.cmake \
 	-DBUILD_SHARED_LIBS=OFF \
 	-Djpeg=ON \
-	-DCMAKE_INSTALL_PREFIX=${PWD}/../../ \
+	-DCMAKE_INSTALL_PREFIX=${PWD}/../../windowsinstall/ \
 	..
     make
     make install

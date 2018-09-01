@@ -1,5 +1,8 @@
 PROJECT ( DEVA_FILTER )
+
 cmake_minimum_required(VERSION 3.0)
+
+message ( STATUS "CMAKE_SYSTEM_NAME = " ${CMAKE_SYSTEM_NAME} )
 
 # SET ( CMAKE_VERBOSE_MAKEFILE ON )
 
@@ -15,11 +18,19 @@ if ( CMAKE_SYSTEM_NAME STREQUAL "Windows" )
   include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Windows.cmake )
   include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindEXIF_Windows.cmake )
   include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindTIFF_Windows.cmake )
-else ( )
+elseif ( CMAKE_SYSTEM_NAME STREQUAL "Darwin" )
+  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindPNG_Mac.cmake )
+  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Mac.cmake )
+  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindEXIF_Mac.cmake )
+  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindLZMA_Mac.cmake )
+  include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindTIFF_Mac.cmake )
+elseif ( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
   find_package ( PNG REQUIRED )
   find_package ( JPEG REQUIRED )
   include ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindEXIF.cmake )
   find_package ( TIFF REQUIRED )
+else ( )
+  message ( FATAL_ERROR "unknown CMAKE_SYSTEM_NAME (" ${CMAKE_SYSTEM_NAME} ")" )
 endif ( )
 
 INCLUDE_DIRECTORIES (
@@ -27,6 +38,7 @@ INCLUDE_DIRECTORIES (
 	${JPEG_INCLUDE_DIR}
 	${EXIF_INCLUDE_DIR}
 	${PNG_INCLUDE_DIR}
+	${LZMA_INCLUDE_DIR}
 	)
 
 ADD_EXECUTABLE ( rad2png rad2png.c
@@ -94,6 +106,7 @@ ADD_EXECUTABLE ( rad2tiff rad2tiff.c
 	)
 TARGET_LINK_LIBRARIES ( rad2tiff
 	${TIFF_LIBRARIES}
+	${LZMA_LIBRARIES}
 	-lm
 	)
 
@@ -116,6 +129,7 @@ ADD_EXECUTABLE ( tiff2rad tiff2rad.c
 	)
 TARGET_LINK_LIBRARIES ( tiff2rad
 	${TIFF_LIBRARIES}
+	${LZMA_LIBRARIES}
 	-lm
 	)
 
@@ -138,6 +152,7 @@ ADD_EXECUTABLE ( make-rad-test-image make-rad-test-image.c
 	)
 TARGET_LINK_LIBRARIES ( make-rad-test-image
 	${TIFF_LIBRARIES}
+	${LZMA_LIBRARIES}
 	-lm
 	)
 
@@ -147,5 +162,6 @@ ADD_EXECUTABLE ( tiff32_to_8 tiff32_to_8.c
 	)
 TARGET_LINK_LIBRARIES ( tiff32_to_8
 	${TIFF_LIBRARIES}
+	${LZMA_LIBRARIES}
 	-lm
 	)

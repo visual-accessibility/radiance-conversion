@@ -1,0 +1,77 @@
+#! /bin/bash
+
+./distclean	# This will remove Windows, Mac, and Linux builds, but
+		# it's the most reliable way to insure that the CMake
+		# caches are cleaned
+
+# Build libz.a
+
+    cd external-libs/zlib-1.2.11
+    ./configure \
+	--static \
+	--prefix=$PWD/../macinstall
+    make
+    make install
+    cd ../..
+
+# Build libpng.a
+
+    cd external-libs/libpng-1.6.34
+    ./configure \
+	--enable-static \
+	--disable-shared \
+	--prefix=$PWD/../macinstall
+    make
+    make install
+    cd ../..
+
+# Build libjpeg.a
+
+    cd external-libs/jpeg-9b
+    ./configure \
+	--enable-static \
+	--disable-shared \
+	--prefix=$PWD/../macinstall
+    make
+    make install
+    cd ../..
+
+# Build libexif.a
+
+    cd external-libs/libexif-master
+    ./configure \
+	--enable-static \
+	--disable-shared \
+	--prefix=$PWD/../macinstall \
+	--disable-nls
+    make
+    make install
+    cd ../..
+
+# Build libzma
+
+    cd external-libs/xz-5.2.4
+    ./configure \
+	--disable-shared \
+	--prefix=$PWD/../macinstall
+    make
+    make install
+    cd ../..
+
+# Build libtiff
+
+    cd external-libs/tiff-4.0.9/build-mac
+    cmake -DBUILD_SHARED_LIBS=OFF \
+	-Djpeg=ON \
+	-DCMAKE_INSTALL_PREFIX=$PWD/../../macinstall \
+	..
+    make
+    make install
+    cd ../../..
+
+# Build rad2jpeg rad2png rad2tiff tiff2rad tiff32_to_8
+
+    cd build-mac
+    cmake ..
+    make
+    cd ..

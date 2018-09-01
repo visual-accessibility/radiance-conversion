@@ -11,7 +11,8 @@ INCLUDE ( ${CMAKE_CURRENT_SOURCE_DIR}/CMake/FindJPEG_Windows.cmake )
 
 if ( ZLIB_FOUND AND JPEG_FOUND )
 
-  set ( CMAKE_FIND_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/external-libs )
+  set ( CMAKE_FIND_ROOT_PATH
+	  ${CMAKE_CURRENT_SOURCE_DIR}/external-libs/windowsinstall )
 
   find_path ( TIFF_INCLUDE_DIR tiff.h )
 
