@@ -1,0 +1,138 @@
+.TH RAD2TIFF 1 "1 March 2017" "DEVA Project"
+.SH NAME
+rad2tiff \- convert Radiance file to a TIFF file
+.SH SYNOPSIS
+\." \fBrad2tiff\fR [--ldr] [--exposure=stops] [--fullrange] [--sRGBencoding]
+\."	[--autoadjust] [--unadjusted_values]
+\."	[--compresszip] [--compresszipp] [--compresslzw] [--compresslzwp]
+\."		input.hdr output.tif
+\fBrad2tiff\fR [\fIoptions\fR] {\fIinput.hdr\fR | \-} \fIoutput.tif\fR
+.SH DESCRIPTION
+Convert Radiance file to a TIFF file.  The input can optionally be "\-",
+indicating that the input image should be read from standard input.
+Output TIFF file can be either 32 bit float RGB (default) or 8 bit RGB.
+.PP
+By convention, when a Radiance file is created the magnitude of the
+numeric pixel values in the Radiance file are scaled to be in a range
+suitable for direct display, assuming a value of 1.0 equals the maximum
+value in each component.  The EXPOSURE record in the Radiance header is
+then used to specify the scaling conversion to radiometric units. By
+default, \fBrad2tiff\fR preserves this functionality, using the TIFF
+STONIT tag to represent the scaling factor.
+.PP
+If a VIEW record is available in the header of the input Radiance file,
+the program sets the FocalLengthIn35mmFormat EXIF tag in the output TIFF
+file.  This allows keeping track of the field of view, which is
+important in the deva-filer workflow.
+.SH OPTIONS
+.TP
+\fB\-\-ldr\fR
+Output is 8 bit RGB (low dynamic range, aka LDR) TIFF file, using the
+sRGB color profile.  \fB\-\-sRGBencoding\fR is implied.  Note that this
+is different from the behavior of the Radiance \fBra_tiff\fR program,
+which uses straight gamma-based luminance encoding.  The non-linear sRGB
+luminance encoding will generally result in more accurate color
+rendition on modern displays than does the gamma-based Radiance
+encoding. Radiance R, G, and B color primaries are also converted to
+sRGB color primaries, though this usually has little or no visual
+effect.
+.TP
+\fB\-\-exposure=\fIstop\fR
+Adjust the exposure of the output file relative to the input file,
+specified in f-stops (powers  of two).  E.g., \fB\-\-exposure=+2\fR
+increases the luminance in the output by a factor or four, while
+\fB\-\-exposure=-1\fR decreases the luminance by half.  Fractional
+values are allowed.
+.TP
+\fB\-\-autoadjust\fB
+Auto adjust brightness values to be in an approximately displayable range.
+Can be combined with \fB\-\-exposure=\fIstop\fR.  Mostly for use with
+\fB\-\-ldr\fR.
+.TP
+\fB\-\-original-units\fB
+Apply the scaling specified by the Radiance EXPOSURE record before
+conversion.  This will result in correctly scaled radiometric units in
+the output TIFF file.  Can be combined with \fB\-\-exposure=\fIstop\fR.
+.TP
+\fB\-\-photometric-units\fB
+Apply the scaling specified by the Radiance EXPOSURE record and then
+convert to photometric (liminance) units, as used in the Radiance XYZE
+format.  This will result in correctly scaled photometric units in the
+output TIFF file.  Can be combined with \fB\-\-exposure=\fIstop\fR.
+.TP
+\fB\-\-fullrange\fB
+With \fB\-\-ldr\fR, remaps the brightness brightness range to cover
+nearly all of the 8-bit range (the top 5% of the range is excluded, to
+avoid problems with LCD clipping).  Without \fB\-\-ldr\fR, the range of
+brightness is remapped to [0.0--0.95].
+.TP
+\fB\-\-sRGBencoding\fR
+Use sRGB primaries in output file.  This usually has little or no visual
+effect.  Implied by the \fB\-\-ldr\fR flag.
+.TP
+\fB\-\-compresszip\fR
+Use zip compression for output.
+.TP
+\fB\-\-compresszipp\fR
+Use zip compression with prediction for output.
+.TP
+\fB\-\-compresslzw\fR
+Use LZW compression for output.
+.TP
+\fB\-\-compresslzwp\fR
+Use LZW compression with predittion for output.
+.SH EXAMPLES
+To convert a Radiance image to 8-bit/color TIFF:
+.IP "" .5i
+rad2tiff --ldr input.hdr output.tif
+.PP
+To convert a Radiance image to 8-bit/color TIFF with mild lightening:
+.IP "" .5i
+rad2tiff --ldr --exposure=1.0 input.hdr output.tif
+.PP
+To convert a Radiance image to 8-bit/color TIFF with moderate darkening:
+.IP "" .5i
+rad2tiff --ldr --exposure=-2.0 input.hdr output.tif
+.PP
+To convert a Radiance image to 32-bit/color floating point TIFF:
+.IP "" .5i
+rad2tiff input.hdr output.tif
+.PP
+This will copy the numeric values in the Radiance file to the TIFF file
+as-is, with the scaling factor specified in the Radiance EXPOSURE record
+encorporated into the STONITS tag of the TIFF image.
+.PP
+To convert a Radiance image to 32-bit/color floating point TIFF,
+converting the numeric values in the Radiance file radiometric units in
+the TIFF file:
+.IP "" .5i
+rad2tiff --original-units input.hdr output.tif
+.PP
+Use this if the TIFF file will be processed by software that expects
+radiometric values but does not process the STONITS TIFF tag.
+.PP
+To convert a Radiance image to 32-bit/color floating point TIFF,
+converting the numeric values in the Radiance file photometric units in
+the TIFF file:
+.IP "" .5i
+rad2tiff --photometric-units input.hdr output.tif
+.PP
+Use this if the TIFF file will be processed by software that expects
+photometric values but does not process the STONITS TIFF tag.
+.SH LIMITATIONS
+When converted to 8-bit/color TIFF images using the \fB\-\-ldr\fR
+option, many high dynamic range Radiance images will required tone
+mapping more sophisticated than provided by this program.  (See the
+Radiance routines \fBpcond\fR and \fBnormtiff\fR).
+.PP
+The \fB\-\-autoadjust\fR option is not particularly sophisticated, and
+often produces less that desirable results.  This is particularly true
+if there are regions in the image that much brighter than the rest of
+the image.
+.PP
+The FocalLengthIn35mmFormat is stored as an integer, and as a result
+field-of-view information is subject to quantization error. 
+.PP
+Does not currently support writing of Logluv encoded TIFF files.
+.SH AUTHOR
+William B. Thompson

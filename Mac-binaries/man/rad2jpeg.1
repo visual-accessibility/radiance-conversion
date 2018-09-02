@@ -1,0 +1,54 @@
+.TH RAD2JPEG 1 "16 April 2017" "DEVA Project"
+.SH NAME
+rad2jpeg \- convert Radiance file to a JPEG file
+.SH SYNOPSIS
+\." \fBrad2jpeg\fR [--exposure=stops] [--autoadjust] [--unadjusted_values]
+\."	input.hdr output.jpg
+\fBrad2jpeg\fR [\fIoptions\fR] {\fIinput.hdr\fR | \-} \fIoutput.jpg\fR
+.SH DESCRIPTION
+Convert Radiance file to a JPEG file.  The input can optionally be "\-",
+indicating that the input image should be read from standard input.
+.PP
+Output uses sRGB primaries and sRGB non-linear magnitude encoding.  This
+is different from the Radiance conversion programs such as ra_tiff,
+which use Radiance primaries and straight gamma non-linear magnitude
+encoding.  The non-linear sRGB luminance encoding will generally result
+in more accurate color rendition on modern displays than does the
+gamma-based Radiance encoding.  Conversion to sRGB color primaries
+typically has has little or no visual effect.
+.SH OPTIONS
+.TP
+\fB\-\-exposure=\fIstop\fR
+Adjust the exposure of the output file relative to the input file,
+specified in f-stops (powers  of two).  E.g., \fB\-\-exposure=+2\fR
+increases the luminance in the output by a factor or four, while
+\fB\-\-exposure=-1\fR decreases the luminance by half.  Fractional
+values are allowed.
+.TP
+\fB\-\-autoadjust\fB
+Auto adjust brightness values to be in an approximately displayable range.
+Can be combined with \fB\-\-exposure=\fIstop\fR.
+.SH EXAMPLES
+To convert a Radiance image to JPEG:
+.IP "" .5i
+rad2jpeg input.hdr output.jpg
+.PP
+To convert a Radiance image to JPEG with mild lightening:
+.IP "" .5i
+rad2jpeg --exposure=1.0 input.hdr output.jpg
+.PP
+To convert a Radiance image to JPEG with moderate darkening:
+.IP "" .5i
+rad2jpeg --exposure=-2.0 input.hdr output.jpg
+.SH LIMITATIONS
+When converted to 8-bit/color JPEG images, many high dynamic range
+Radiance images will required tone mapping more sophisticated than
+provided by this program.  (See the Radiance routines \fBpcond\fR and
+\fBnormtiff\fR).
+.PP
+The \fB\-\-autoadjust\fR option is not particularly sophisticated, and
+often produces less that desirable results.  This is particularly true
+if there are regions in the image that much brighter than the rest of
+the image.
+.SH AUTHOR
+William B. Thompson
