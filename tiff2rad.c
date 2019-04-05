@@ -29,7 +29,7 @@
 #include "sRGB_radiance.h"
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"
-#include "deva-license.h"
+#include "devas-license.h"
 
 char	*Usage = "tiff2rad [--sRGBencoding] input.tif output.hdr";
 int	args_needed = 2;
@@ -40,7 +40,7 @@ main ( int argc, char *argv[] )
     int		    sRGBencoding_flag = FALSE;
     TIFF	    *input;
     double	    stonits;
-    DEVA_FOV	    deva_fov;
+    DeVAS_FOV	    devas_fov;
     TT_gray_image   *gray_image;
     TT_float_image  *float_image;
     TT_RGB_image    *RGB_image;
@@ -96,11 +96,11 @@ main ( int argc, char *argv[] )
 		    TT_image_n_cols ( gray_image ) );
 
 	    /* based on diagonal */
-	    deva_fov = get_tiff_fov_diag ( input,
+	    devas_fov = get_tiff_fov_diag ( input,
 		    TT_image_n_rows ( gray_image ),
 		    TT_image_n_cols ( gray_image ) );
-	    header.hFOV = deva_fov.h_fov;
-	    header.vFOV = deva_fov.v_fov;
+	    header.hFOV = devas_fov.h_fov;
+	    header.vFOV = devas_fov.v_fov;
 
 	    header.header_text = TT_get_description ( input );
 
@@ -126,11 +126,11 @@ main ( int argc, char *argv[] )
 		    TT_image_n_cols ( float_image ) );
 
 	    /* based on diagonal */
-	    deva_fov = get_tiff_fov_diag ( input,
+	    devas_fov = get_tiff_fov_diag ( input,
 		    TT_image_n_rows ( float_image ),
 		    TT_image_n_cols ( float_image ) );
-	    header.hFOV = deva_fov.h_fov;
-	    header.vFOV = deva_fov.v_fov;
+	    header.hFOV = devas_fov.h_fov;
+	    header.vFOV = devas_fov.v_fov;
 
 	    header.header_text = TT_get_description ( input );
 
@@ -156,11 +156,11 @@ main ( int argc, char *argv[] )
 		    TT_image_n_cols ( RGB_image ) );
 
 	    /* based on diagonal */
-	    deva_fov = get_tiff_fov_diag ( input,
+	    devas_fov = get_tiff_fov_diag ( input,
 		    TT_image_n_rows ( RGB_image ),
 		    TT_image_n_cols ( RGB_image ) );
-	    header.hFOV = deva_fov.h_fov;
-	    header.vFOV = deva_fov.v_fov;
+	    header.hFOV = devas_fov.h_fov;
+	    header.vFOV = devas_fov.v_fov;
 
 	    header.header_text = TT_get_description ( input );
 
@@ -180,11 +180,11 @@ main ( int argc, char *argv[] )
 	    RGBf_image = TT_RGBf_image_from_file ( input );
 
 	    /* based on diagonal */
-	    deva_fov = get_tiff_fov_diag ( input,
+	    devas_fov = get_tiff_fov_diag ( input,
 		    TT_image_n_rows ( RGBf_image ),
 		    TT_image_n_cols ( RGBf_image ) );
-	    header.hFOV = deva_fov.h_fov;
-	    header.vFOV = deva_fov.v_fov;
+	    header.hFOV = devas_fov.h_fov;
+	    header.vFOV = devas_fov.v_fov;
 
 	    header.header_text = TT_get_description ( input );
 

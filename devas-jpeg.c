@@ -15,11 +15,11 @@
 #include <setjmp.h>	/* needed for error returns from libjpeg */
 #include <assert.h>
 #include <libexif/exif-data.h>
-#include "deva-image.h"
-#include "DEVA-jpeg.h"
+#include "devas-image.h"
+#include "devas-jpeg.h"
 #include "iccjpeg.h"
 #include "radiance-conversion-version.h"
-#include "deva-license.h"
+#include "devas-license.h"
 
 #define	DEFAULT_QUALITY		80
 
@@ -28,8 +28,8 @@
 static char *strndup ( const char *s, size_t n );
 #endif	/*  _mingw64_cross */
 
-DEVA_RGB_image *
-DEVA_RGB_image_from_filename_jpg ( char *filename, char **comment,
+DeVAS_RGB_image *
+DeVAS_RGB_image_from_filename_jpg ( char *filename, char **comment,
 	double *focal_length_35mm_equiv )
 {
     FILE    *file;
@@ -40,25 +40,25 @@ DEVA_RGB_image_from_filename_jpg ( char *filename, char **comment,
 	exit ( EXIT_FAILURE );
     }
 
-    return ( DEVA_RGB_image_from_file_jpg ( file, comment,
+    return ( DeVAS_RGB_image_from_file_jpg ( file, comment,
 		focal_length_35mm_equiv ) );
 }
 
 /* libjpeg error handling */
 
-struct jpeg_DEVA_error_mgr {
+struct jpeg_DeVAS_error_mgr {
     struct  jpeg_error_mgr pub;	/* "public" fields */
     jmp_buf setjmp_buffer;	/* for return to caller */
 };
 
-typedef struct jpeg_DEVA_error_mgr *jpeg_DEVA_error_ptr;
+typedef struct jpeg_DeVAS_error_mgr *jpeg_DeVAS_error_ptr;
 
 METHODDEF(void)
-jpeg_DEVA_error_exit (j_common_ptr cinfo)
+jpeg_DeVAS_error_exit (j_common_ptr cinfo)
 {
-    /* cinfo->err really points to a jpeg_DEVA_error_mgr struct,
+    /* cinfo->err really points to a jpeg_DeVAS_error_mgr struct,
        so coerce pointer */
-    jpeg_DEVA_error_ptr myerr = (jpeg_DEVA_error_ptr) cinfo->err;
+    jpeg_DeVAS_error_ptr myerr = (jpeg_DeVAS_error_ptr) cinfo->err;
 
     /* Always display the message. */
     /* We could postpone this until after returning, if we chose. */
@@ -68,17 +68,17 @@ jpeg_DEVA_error_exit (j_common_ptr cinfo)
     longjmp ( myerr->setjmp_buffer, 1 );
 }
 
-DEVA_RGB_image *
-DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
+DeVAS_RGB_image *
+DeVAS_RGB_image_from_file_jpg ( FILE *input, char **comment,
 	double *focal_length_35mm_equiv )
 {
     struct	    jpeg_decompress_struct cinfo;
-    struct	    jpeg_DEVA_error_mgr jerr;
+    struct	    jpeg_DeVAS_error_mgr jerr;
     jpeg_saved_marker_ptr    marker_list;
-    int		    image_data_offset;	/* in units of DEVA_RGB! */
+    int		    image_data_offset;	/* in units of DeVAS_RGB! */
     JSAMPROW	    row_pointer[1];	/* pointer to JSAMPLE row[s] */
     unsigned int    n_rows, n_cols;
-    DEVA_RGB_image    *image;
+    DeVAS_RGB_image    *image;
     ExifData	    *exif_data;
     ExifContent	    *exif_content;
     ExifEntry	    *exif_entry;
@@ -89,8 +89,8 @@ DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
 
     /* We set up the normal JPEG error routines, then override error_exit. */
     cinfo.err = jpeg_std_error ( &jerr.pub );
-    jerr.pub.error_exit = jpeg_DEVA_error_exit;
-    /* Establish the setjmp return context for jpeg_DEVA_error_exit to use. */
+    jerr.pub.error_exit = jpeg_DeVAS_error_exit;
+    /* Establish the setjmp return context for jpeg_DeVAS_error_exit to use. */
     if ( setjmp ( jerr.setjmp_buffer ) ) {
 	/*
 	 * If we get here, the JPEG code has signaled an error.  We need to
@@ -164,7 +164,7 @@ DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
 					(size_t ) marker_list->data_length );
 		if ( comment_malloc == NULL ) {
 		    fprintf ( stderr,
-			    "DEVA_RGB_image_from_file_jpg: malloc failed!\n " );
+			    "DeVAS_RGB_image_from_file_jpg: malloc failed!\n " );
 		    exit ( EXIT_FAILURE );
 		}
 		*comment = comment_malloc;
@@ -193,14 +193,14 @@ DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
     if ( ( cinfo.out_color_space != JCS_RGB ) ||
 	    ( cinfo.out_color_components != 3 ) ) {
 	fprintf ( stderr,
-		"DEVA_RGB_image_from_file_jpg: input image not RGB!\n" );
+		"DeVAS_RGB_image_from_file_jpg: input image not RGB!\n" );
 	exit ( EXIT_FAILURE );
     }
 
     n_rows = cinfo.output_height;
     n_cols = cinfo.output_width;
 
-    image = DEVA_RGB_image_new ( n_rows, n_cols );
+    image = DeVAS_RGB_image_new ( n_rows, n_cols );
 
     /* Step 6: while (scan lines remain to be read) */
     /*           jpeg_read_scanlines(...); */
@@ -217,12 +217,12 @@ DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
 	 */
 	image_data_offset = cinfo.output_scanline * cinfo.output_width;
 	/*
-	 * Assume DEVA_RGB_image_new allocates image data contiguously
+	 * Assume DeVAS_RGB_image_new allocates image data contiguously
 	 * with no padding.
 	 */
-	assert ( sizeof ( DEVA_RGB ) == 3 );	/* just checking... */
+	assert ( sizeof ( DeVAS_RGB ) == 3 );	/* just checking... */
 	row_pointer[0] =
-	    (JSAMPROW) ( &DEVA_image_data ( image, 0, 0 ) + image_data_offset );
+	    (JSAMPROW) ( &DeVAS_image_data ( image, 0, 0 ) + image_data_offset );
 
 	(void) jpeg_read_scanlines ( &cinfo, row_pointer, 1 );
     }
@@ -252,7 +252,7 @@ DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
 
     if ( jerr.pub.num_warnings > 0 ) {
 	fprintf ( stderr,
-		"DEVA_RGB_image_from_file_jpg: %d decompression warnings!\n",
+		"DeVAS_RGB_image_from_file_jpg: %d decompression warnings!\n",
 	       		(int) jerr.pub.num_warnings );
 	exit ( EXIT_FAILURE );
     }
@@ -262,7 +262,7 @@ DEVA_RGB_image_from_file_jpg ( FILE *input, char **comment,
 }
 
 void
-DEVA_RGB_image_to_filename_jpg ( char *filename, DEVA_RGB_image *image,
+DeVAS_RGB_image_to_filename_jpg ( char *filename, DeVAS_RGB_image *image,
 	char *comment )
 {
     FILE    *file;
@@ -273,20 +273,20 @@ DEVA_RGB_image_to_filename_jpg ( char *filename, DEVA_RGB_image *image,
 	exit ( EXIT_FAILURE );
     }
 
-    DEVA_RGB_image_to_file_jpg ( file, image, comment );
+    DeVAS_RGB_image_to_file_jpg ( file, image, comment );
 
     fclose ( file );
 }
 
 void
-DEVA_RGB_image_to_file_jpg ( FILE *output, DEVA_RGB_image *image,
+DeVAS_RGB_image_to_file_jpg ( FILE *output, DeVAS_RGB_image *image,
 	char *comment )
 {
     struct jpeg_compress_struct	cinfo;
-    struct jpeg_DEVA_error_mgr	jerr;
+    struct jpeg_DeVAS_error_mgr	jerr;
 
     JSAMPROW	    row_pointer[1];	/* pointer to JSAMPLE row[s] */
-    int		    image_data_offset;	/* in units of DEVA_RGB! */
+    int		    image_data_offset;	/* in units of DeVAS_RGB! */
     unsigned int    n_rows, n_cols;
     int		    quality;
 #include "sRGB_IEC61966-2-1_black_scaled.c"	/* hardwared binary profile */
@@ -299,8 +299,8 @@ DEVA_RGB_image_to_file_jpg ( FILE *output, DEVA_RGB_image *image,
      * address which we place into the link field in cinfo.
      */
     cinfo.err = jpeg_std_error ( &jerr.pub );
-    jerr.pub.error_exit = jpeg_DEVA_error_exit;
-    /* Establish the setjmp return context for jpeg_DEVA_error_exit to use. */
+    jerr.pub.error_exit = jpeg_DeVAS_error_exit;
+    /* Establish the setjmp return context for jpeg_DeVAS_error_exit to use. */
     if ( setjmp ( jerr.setjmp_buffer ) ) {
 	/*
 	 * If we get here, the JPEG code has signaled an error.  We need to
@@ -324,8 +324,8 @@ DEVA_RGB_image_to_file_jpg ( FILE *output, DEVA_RGB_image *image,
      */
     jpeg_stdio_dest ( &cinfo, output );
 
-    n_rows = DEVA_image_n_rows ( image );
-    n_cols = DEVA_image_n_cols ( image );
+    n_rows = DeVAS_image_n_rows ( image );
+    n_cols = DeVAS_image_n_cols ( image );
 
     /* Step 3: set parameters for compression */
 
@@ -382,12 +382,12 @@ DEVA_RGB_image_to_file_jpg ( FILE *output, DEVA_RGB_image *image,
 	 */
 	image_data_offset = cinfo.next_scanline * n_cols;
 	/*
-	 * Assume DEVA_RGB_image_new allocates image data contiguously
+	 * Assume DeVAS_RGB_image_new allocates image data contiguously
 	 * with no padding.
 	 */
-	assert ( sizeof ( DEVA_RGB ) == 3 );      /* just checking... */
+	assert ( sizeof ( DeVAS_RGB ) == 3 );      /* just checking... */
 	row_pointer[0] =
-	    (JSAMPROW) ( &DEVA_image_data ( image, 0, 0 ) + image_data_offset );
+	   (JSAMPROW) ( &DeVAS_image_data ( image, 0, 0 ) + image_data_offset );
 	(void) jpeg_write_scanlines ( &cinfo, row_pointer, 1 );
     }
 

@@ -23,7 +23,7 @@
 #include "tifftoolsimage.h"
 #include "radiance/color.h"
 #include "radiance-conversion-version.h"
-#include "deva-license.h"
+#include "devas-license.h"
 
 #define	GLARE_LEVEL_RATIO	5.0	/* RADIANCE identifies glare sources */
 					/* as being brighter than 7 times the */
@@ -87,7 +87,7 @@ main ( int argc, char *argv[] )
     TIFF	    *output;
     RadianceHeader  header;
     int		    row, col;
-    DEVA_FOV	    fov;
+    DeVAS_FOV	    fov;
     char	    *new_description = NULL;
     RGBPRIMS	    radiance_prims = STDPRIMS;
     RGBPRIMS	    sRGB_prims = sRGBPRIMS;

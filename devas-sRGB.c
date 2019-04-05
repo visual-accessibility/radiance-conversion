@@ -20,7 +20,7 @@
  */
 
 #include <math.h>
-#include "DEVA-sRGB.h"
+#include "devas-sRGB.h"
 
 static float	sRGB_to_XYZ_matrix[3][3] = {
     			{  0.4124564,  0.3575761,  0.1804375 },
@@ -35,8 +35,8 @@ static float	XYZ_to_sRGB_matrix[3][3] = {
 			{  0.0556434, -0.2040259,  1.0572252 }
 };
 
-DEVA_float
-gray_to_Y ( DEVA_gray gray )
+DeVAS_float
+gray_to_Y ( DeVAS_gray gray )
 /*
  * Use sRGB decoding from gray
  */
@@ -57,8 +57,8 @@ gray_to_Y ( DEVA_gray gray )
     return ( Clinear );
 }
 
-DEVA_float
-graylinear_to_Y ( DEVA_gray gray )
+DeVAS_float
+graylinear_to_Y ( DeVAS_gray gray )
 /*
  * Use linear decoding from gray
  */
@@ -72,37 +72,37 @@ graylinear_to_Y ( DEVA_gray gray )
     return ( Clinear );
 }
 
-DEVA_RGB
-Y_to_sRGB ( DEVA_float Y )
+DeVAS_RGB
+Y_to_sRGB ( DeVAS_float Y )
 {
-    DEVA_RGB  sRGB;
+    DeVAS_RGB  sRGB;
 
     sRGB.red = sRGB.green = sRGB.blue = Y_to_gray ( Y );
 
     return ( sRGB );
 }
 
-DEVA_RGB
-Y_to_RGB ( DEVA_float Y )
+DeVAS_RGB
+Y_to_RGB ( DeVAS_float Y )
 /*
  * linear mapping between Y and RGB values.
  */
 {
-    DEVA_RGB  RGB;
+    DeVAS_RGB  RGB;
 
     RGB.red = RGB.green = RGB.blue = Y_to_graylinear ( Y );
 
     return ( RGB );
 }
 
-DEVA_gray
-Y_to_gray ( DEVA_float Y )
+DeVAS_gray
+Y_to_gray ( DeVAS_float Y )
 /*
  * Use sRGB encoding for gray value.
  */
 {
     float   float_value;
-    DEVA_gray gray_value;
+    DeVAS_gray gray_value;
 
     /* clip going this direction (may need to tone map first!!!) */
 
@@ -125,13 +125,13 @@ Y_to_gray ( DEVA_float Y )
     return ( gray_value );
 }
 
-DEVA_gray
-Y_to_graylinear ( DEVA_float Y )
+DeVAS_gray
+Y_to_graylinear ( DeVAS_float Y )
 /*
  * Use linear encoding for gray value.
  */
 {
-    DEVA_gray gray_value;
+    DeVAS_gray gray_value;
 
     /* clip going this direction (may need to tone map first!!!) */
 
@@ -148,10 +148,10 @@ Y_to_graylinear ( DEVA_float Y )
     return ( gray_value );
 }
 
-DEVA_RGBf
-sRGB_to_RGBf (DEVA_RGB sRGB )
+DeVAS_RGBf
+sRGB_to_RGBf (DeVAS_RGB sRGB )
 {
-    DEVA_RGBf RGBf;
+    DeVAS_RGBf RGBf;
 
     RGBf.red = gray_to_Y ( sRGB.red );
     RGBf.green = gray_to_Y ( sRGB.green );
@@ -160,10 +160,10 @@ sRGB_to_RGBf (DEVA_RGB sRGB )
     return ( RGBf );
 }
 
-DEVA_RGBf
-RGB_to_RGBf (DEVA_RGB RGB )
+DeVAS_RGBf
+RGB_to_RGBf (DeVAS_RGB RGB )
 {
-    DEVA_RGBf RGBf;
+    DeVAS_RGBf RGBf;
 
     RGBf.red = graylinear_to_Y ( RGB.red );
     RGBf.green = graylinear_to_Y ( RGB.green );
@@ -172,11 +172,11 @@ RGB_to_RGBf (DEVA_RGB RGB )
     return ( RGBf );
 }
 
-DEVA_XYZ
-sRGB_to_XYZ ( DEVA_RGB sRGB )
+DeVAS_XYZ
+sRGB_to_XYZ ( DeVAS_RGB sRGB )
 {
-    DEVA_XYZ  XYZ;
-    DEVA_RGBf RGBf;
+    DeVAS_XYZ  XYZ;
+    DeVAS_RGBf RGBf;
 
     RGBf.red = gray_to_Y ( sRGB.red );
     RGBf.green = gray_to_Y ( sRGB.green );
@@ -187,11 +187,11 @@ sRGB_to_XYZ ( DEVA_RGB sRGB )
     return ( XYZ );
 }
 
-DEVA_XYZ
-RGB_to_XYZ ( DEVA_RGB RGB )
+DeVAS_XYZ
+RGB_to_XYZ ( DeVAS_RGB RGB )
 {
-    DEVA_XYZ  XYZ;
-    DEVA_RGBf RGBf;
+    DeVAS_XYZ  XYZ;
+    DeVAS_RGBf RGBf;
 
     RGBf.red = graylinear_to_Y ( RGB.red );
     RGBf.green = graylinear_to_Y ( RGB.green );
@@ -202,11 +202,11 @@ RGB_to_XYZ ( DEVA_RGB RGB )
     return ( XYZ );
 }
 
-DEVA_float
-sRGB_to_Y ( DEVA_RGB sRGB )
+DeVAS_float
+sRGB_to_Y ( DeVAS_RGB sRGB )
 {
-    DEVA_float	Y;
-    DEVA_RGBf	RGBf;
+    DeVAS_float	Y;
+    DeVAS_RGBf	RGBf;
 
     RGBf.red = gray_to_Y ( sRGB.red );
     RGBf.green = gray_to_Y ( sRGB.green );
@@ -219,11 +219,11 @@ sRGB_to_Y ( DEVA_RGB sRGB )
     return ( Y );
 }
 
-DEVA_float
-RGB_to_Y ( DEVA_RGB RGB )
+DeVAS_float
+RGB_to_Y ( DeVAS_RGB RGB )
 {
-    DEVA_float	Y;
-    DEVA_RGBf	RGBf;
+    DeVAS_float	Y;
+    DeVAS_RGBf	RGBf;
 
     RGBf.red = graylinear_to_Y ( RGB.red );
     RGBf.green = graylinear_to_Y ( RGB.green );
@@ -236,10 +236,10 @@ RGB_to_Y ( DEVA_RGB RGB )
     return ( Y );
 }
 
-DEVA_RGB
-RGBf_to_sRGB ( DEVA_RGBf RGBf )
+DeVAS_RGB
+RGBf_to_sRGB ( DeVAS_RGBf RGBf )
 {
-    DEVA_RGB  sRGB;
+    DeVAS_RGB  sRGB;
     float   max_value;
 
     /* clip so largest RGBf value is <= 1.0 */
@@ -260,13 +260,13 @@ RGBf_to_sRGB ( DEVA_RGBf RGBf )
     return ( sRGB );
 }
 
-DEVA_RGB
-RGBf_to_RGB ( DEVA_RGBf RGBf )
+DeVAS_RGB
+RGBf_to_RGB ( DeVAS_RGBf RGBf )
 /*
  * linear RGB encoding
  */
 {
-    DEVA_RGB  RGB;
+    DeVAS_RGB  RGB;
     float   max_value;
 
     /* clip so largest RGBf value is <= 1.0 */
@@ -287,10 +287,10 @@ RGBf_to_RGB ( DEVA_RGBf RGBf )
     return ( RGB );
 }
 
-DEVA_float
-RGBf_to_Y ( DEVA_RGBf RGBf )
+DeVAS_float
+RGBf_to_Y ( DeVAS_RGBf RGBf )
 {
-    DEVA_float Y;
+    DeVAS_float Y;
 
     Y = ( sRGB_to_XYZ_matrix[1][0] * RGBf.red ) +
 		( sRGB_to_XYZ_matrix[1][1] * RGBf.green ) +
@@ -299,10 +299,10 @@ RGBf_to_Y ( DEVA_RGBf RGBf )
     return ( Y );
 }
 
-DEVA_XYZ
-RGBf_to_XYZ ( DEVA_RGBf RGBf )
+DeVAS_XYZ
+RGBf_to_XYZ ( DeVAS_RGBf RGBf )
 {
-    DEVA_XYZ  XYZ;
+    DeVAS_XYZ  XYZ;
 
     XYZ.X = ( sRGB_to_XYZ_matrix[0][0] * RGBf.red ) +
 		( sRGB_to_XYZ_matrix[0][1] * RGBf.green ) +
@@ -319,22 +319,22 @@ RGBf_to_XYZ ( DEVA_RGBf RGBf )
     return ( XYZ );
 }
 
-DEVA_RGB
-XYZ_to_sRGB ( DEVA_XYZ XYZ )
+DeVAS_RGB
+XYZ_to_sRGB ( DeVAS_XYZ XYZ )
 {
     return ( RGBf_to_sRGB ( XYZ_to_RGBf ( XYZ ) ) );
 }
 
-DEVA_RGB
-XYZ_to_RGB ( DEVA_XYZ XYZ )
+DeVAS_RGB
+XYZ_to_RGB ( DeVAS_XYZ XYZ )
 {
     return ( RGBf_to_RGB ( XYZ_to_RGBf ( XYZ ) ) );
 }
 
-DEVA_RGBf
-XYZ_to_RGBf ( DEVA_XYZ XYZ )
+DeVAS_RGBf
+XYZ_to_RGBf ( DeVAS_XYZ XYZ )
 {
-    DEVA_RGBf RGBf;
+    DeVAS_RGBf RGBf;
 
     RGBf.red = ( XYZ_to_sRGB_matrix[0][0] * XYZ.X ) +
 		( XYZ_to_sRGB_matrix[0][1] * XYZ.Y ) +
@@ -351,10 +351,10 @@ XYZ_to_RGBf ( DEVA_XYZ XYZ )
     return ( RGBf );
 }
 
-DEVA_xyY
-XYZ_to_xyY ( DEVA_XYZ XYZ )
+DeVAS_xyY
+XYZ_to_xyY ( DeVAS_XYZ XYZ )
 {
-    DEVA_xyY    xyY;
+    DeVAS_xyY    xyY;
     float       norm;
 
     norm = XYZ.X + XYZ.Y + XYZ.Z;
@@ -370,10 +370,10 @@ XYZ_to_xyY ( DEVA_XYZ XYZ )
     return ( xyY );
 }
 
-DEVA_XYZ
-xyY_to_XYZ ( DEVA_xyY xyY )
+DeVAS_XYZ
+xyY_to_XYZ ( DeVAS_xyY xyY )
 {
-    DEVA_XYZ    XYZ;
+    DeVAS_XYZ    XYZ;
 
     if ( xyY.y <= 0.0 ) {	/* add epsilon tolerance? */
 	XYZ.X = XYZ.Y = XYZ.Z = 0.0;

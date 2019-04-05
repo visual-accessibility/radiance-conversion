@@ -12,7 +12,7 @@
 #include "TT-sRGB.h"
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"
-#include "deva-license.h"
+#include "devas-license.h"
 
 #define	N_ROWS		300
 #define	N_COLS		300

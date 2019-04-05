@@ -62,9 +62,10 @@ As currently structured, the Windows build produces a directly
 executable versions of deva-filter, deva-visibility,
 make-coordinates-file, deva-visualize-geometry, and
 deva-compare-boundaries.  No installer or special permisions are
-required.  On the other hand, you'll need to put deva-filter.exe in
+required.  On the other hand, you'll need to put the executable files in
 whatever current directory you have for the command window or put the
-.exe file in some fixed place and list the folder in your PATH variable.
+.exe files in some fixed place and list the folder in your PATH
+variable.
 
 Text annotation of files output by deva-compare-boundaries is currently
 not supported on Windows.

@@ -6,8 +6,8 @@
  * Uses algorithmic definition of sRGB, not color management software
  */
 
-#ifndef __DEVA_sRGB_CONVERT_H
-#define __DEVA_sRGB_CONVERT_H
+#ifndef __DeVAS_sRGB_CONVERT_H
+#define __DeVAS_sRGB_CONVERT_H
 
 #include "tifftools.h"
 
@@ -46,4 +46,4 @@ TT_XYZ	    xyY_to_XYZ ( TT_xyY xyY );
 }
 #endif
 
-#endif  /* __DEVA_sRGB_CONVERT_H */
+#endif  /* __DeVAS_sRGB_CONVERT_H */

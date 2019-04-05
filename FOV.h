@@ -14,24 +14,24 @@
  * of hFOV and vFOV are used instead of the hFOV.
  */
 
-#ifndef __DEVA_FOV_H
-#define __DEVA_FOV_H
+#ifndef __DeVAS_FOV_H
+#define __DeVAS_FOV_H
 
 #include <tiffio.h>
 
 typedef struct {
     double  v_fov;	/* degrees */
     double  h_fov;	/* degrees */
-} DEVA_FOV;
+} DeVAS_FOV;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* FOV-FL conversions based on diagonal (needs aspect ratio information) */
-DEVA_FOV    FocalLength_35mm_2_FOV_diag ( double FocalLength_35mm, int v_dim,
+DeVAS_FOV    FocalLength_35mm_2_FOV_diag ( double FocalLength_35mm, int v_dim,
 		int h_dim );
-double	    FOV_diag_2_FocalLength_35mm ( DEVA_FOV fov, int v_dim, int h_dim );
+double	    FOV_diag_2_FocalLength_35mm ( DeVAS_FOV fov, int v_dim, int h_dim );
 
 /* FOV-FL conversions based on horizontal (longest) image side */
 double	FocalLength_35mm_2_FOV ( double FocalLength_35mm );
@@ -44,8 +44,8 @@ double	radian2degree ( double radians );
 /* TIFF-specific tag manipulation */
 
 /*   Based on fov of diagonal image side: */
-void	set_tiff_fov_diag ( TIFF *file, DEVA_FOV fov, int v_dim, int h_dim );
-DEVA_FOV  get_tiff_fov_diag ( TIFF *file, int v_dim, int h_dim );
+void	set_tiff_fov_diag ( TIFF *file, DeVAS_FOV fov, int v_dim, int h_dim );
+DeVAS_FOV  get_tiff_fov_diag ( TIFF *file, int v_dim, int h_dim );
 
 /*   Based on fov of horizontal (longest) image side: */
 void	set_tiff_fov ( TIFF *file, double fov );
@@ -64,4 +64,4 @@ double  short_side_fov ( int long_side_dim, int short_side_dim,
 }
 #endif
 
-#endif	/* __DEVA_FOV_H */
+#endif	/* __DeVAS_FOV_H */

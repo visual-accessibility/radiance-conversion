@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include "TT-sRGB.h"
 #include "tifftoolsimage.h"
-#include "deva-license.h"
+#include "devas-license.h"
 
 char	*Usage = "tiff32_to_8 [--linear] [--offset] input.tif output.hdr";
 int	args_needed = 2;

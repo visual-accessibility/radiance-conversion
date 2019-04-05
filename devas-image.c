@@ -4,7 +4,7 @@
  *
  * Defines dynamically allocatable 2-D image arrays for each of these types.
  * Image arrays have additional properties associated with them of use in
- * the deva-filter.
+ * the devas-filter.
  *
  * Images are implemented as objects that can be created, destroyed, and
  * operated on by a variety of methods.
@@ -14,76 +14,81 @@
  *
  * Supported pixel types:
  *
- *   DEVA_gray      8 bit unsigned grayscale
- *   DEVA_float     32 bit float
- *   DEVA_double    64 bit float
- *   DEVA_RGB       3 x 8 bit RGB
- *   DEVA_RGBf      3 x 32 bit float RGB
- *   DEVA_XYZ       3 x 32 bit float CIE XYC
- *   DEVA_xyY       3 x 32 bit float CIT xyY
- *   DEVA_complexf  32 bit float complex
- *   DEVA_complexd  64 bit double complex
+ *   DeVAS_gray      8 bit unsigned grayscale
+ *   DeVAS_float     32 bit float
+ *   DeVAS_double    64 bit float
+ *   DeVAS_RGB       3 x 8 bit RGB
+ *   DeVAS_RGBf      3 x 32 bit float RGB
+ *   DeVAS_XYZ       3 x 32 bit float CIE XYC
+ *   DeVAS_xyY       3 x 32 bit float CIE xyY
+ *   DeVAS_complexf  32 bit float complex
+ *   DeVAS_complexd  64 bit double complex
  *
  * To create an image object:
  *
- *   <DEVA_type>_image_new ( <n_rows>, <n_cols> )
+ *   <DeVAS_type>_image_new ( <n_rows>, <n_cols> )
  *
  *   	Note that arguments are (n_rows, n_cols), not (width, height) or
  *   	(x_dim, y_dim)!
  *
  * To destroy an image object:
  *
- *   <DEVA_type>_image_delete ( <image_object> )
+ *   <DeVAS_type>_image_delete ( <image_object> )
  *
  * Methods on image objects:
  *
- *   DEVA_image_data ( <image_object>, <row>, <col> )
+ *   DeVAS_image_data ( <image_object>, <row>, <col> )
  *
  *   	This is a C l-value, meaning that it can be either assigned a value
  *   	or used in an expression.
  *
- *   	If the C pre-processor variable DEVA_CHECK_BOUNDS is defined before
- *   	any direct or indirect inclusion of deva-image.h, bounds checking is
+ *   	If the C pre-processor variable DeVAS_CHECK_BOUNDS is defined before
+ *   	any direct or indirect inclusion of devas-image.h, bounds checking is
  *   	done for the row and column index values. (Safest is to do the define
  *   	before including *any* include files.)
  *
- *   DEVA_image_n_rows ( <deva_image> )
+ *   DeVAS_image_n_rows ( <devas_image> )
  *
- *   DEVA_image_n_cols ( <deva_image> )
+ *   DeVAS_image_n_cols ( <devas_image> )
  *
- *   DEVA_image_samesize ( <deva_image_1>, <deva_image_2> )
+ *   DeVAS_image_samesize ( <devas_image_1>, <devas_image_2> )
  *
  *   					TRUE if images are the same dimensions.
  *
- *   DEVA_image_info ( <deva_image> )	The DEVA_Image_Info information
+ *   DeVAS_image_info ( <devas_image> )	The DeVAS_Image_Info information
  *   					associated with the image object.
  *   					This includes a Radiance VIEW
  *   					structure and a description sting.
- *   					The DEVA_Image_Info information may
+ *   					The DeVAS_Image_Info information may
  *   					be either set or used in an expression.
  *
- *   DEVA_image_view ( <deva_image> )	The Radiance VIEW structure.  May be
+ *   DeVAS_image_view ( <devas_image> )	The Radiance VIEW structure.  May be
  *   					either set or used in an expression.
  *
- *   DEVA_image_description ( <deva_image> )
+ *   DeVAS_image_description ( <devas_image> )
  *
  *   					The description string. May be
  *   					either set or used in an expression.
  *
- *   DEVA_image_exposure_set ( <deva_image> )
+ *   DeVAS_image_exposure_set ( <devas_image> )
  *
  *					TRUE if an exposure value has been set.
  *
- *   DEVA_image_exposure ( <deva_image> )
+ *   DeVAS_image_exposure ( <devas_image> )
  *
  * 					The exposure value (only valid if
- *					DEVA_image_exposure_set is TRUE).
+ *					DeVAS_image_exposure_set is TRUE).
+ */
+
+/*
+ * This routine requires linking in the Radiance routines color.c and
+ * spec_rgb.c to provide transform matricies.
  */
 
 #include <stdlib.h>
 #include <assert.h>
-#include "deva-image.h"
-#include "deva-license.h"	/* DEVA open source license */
+#include "devas-image.h"
+#include "devas-license.h"	/* DeVAS open source license */
 #include "radiance/color.h"
 
 /*
@@ -94,16 +99,16 @@
  * xyY) are scaled as for xyze-format Radiance files (candela/m^2).
  */
 
-DEVA_xyY
-DEVA_XYZ2xyY ( DEVA_XYZ XYZ )
+DeVAS_xyY
+DeVAS_XYZ2xyY ( DeVAS_XYZ XYZ )
 {
-    DEVA_xyY	xyY;
+    DeVAS_xyY	xyY;
     float	norm;
 
     norm = XYZ.X + XYZ.Y + XYZ.Z;
     if ( norm <= 0.0 ) {	/* add epsilon tolerance? */
-	xyY.x = DEVA_x_WHITEPOINT;
-	xyY.y = DEVA_y_WHITEPOINT;
+	xyY.x = DeVAS_x_WHITEPOINT;
+	xyY.y = DeVAS_y_WHITEPOINT;
 	xyY.Y = 0.0;
     } else {
 	xyY.x = XYZ.X / norm;
@@ -114,10 +119,10 @@ DEVA_XYZ2xyY ( DEVA_XYZ XYZ )
     return ( xyY );
 }
 
-DEVA_XYZ
-DEVA_xyY2XYZ ( DEVA_xyY xyY )
+DeVAS_XYZ
+DeVAS_xyY2XYZ ( DeVAS_xyY xyY )
 {
-    DEVA_XYZ	XYZ;
+    DeVAS_XYZ	XYZ;
 
     if ( xyY.y <= 0.0 ) {	/* add epsilon tolerance? */
 	XYZ.X = XYZ.Y = XYZ.Z = 0.0;
@@ -130,11 +135,11 @@ DEVA_xyY2XYZ ( DEVA_xyY xyY )
     return ( XYZ );
 }
 
-DEVA_RGBf
-DEVA_XYZ2RGBf ( DEVA_XYZ XYZ )
+DeVAS_RGBf
+DeVAS_XYZ2RGBf ( DeVAS_XYZ XYZ )
 /* Use Radiance definition of RGB primaries. */
 {
-    DEVA_RGBf	RGBf;
+    DeVAS_RGBf	RGBf;
     COLOR	rad_rgb, rad_xyz;
 
     colval ( rad_xyz, CIEX ) = XYZ.X;
@@ -150,11 +155,11 @@ DEVA_XYZ2RGBf ( DEVA_XYZ XYZ )
     return ( RGBf );
 }
 
-DEVA_XYZ
-DEVA_RGBf2XYZ ( DEVA_RGBf RGBf )
+DeVAS_XYZ
+DeVAS_RGBf2XYZ ( DeVAS_RGBf RGBf )
 /* Use Radiance definition of RGB primaries. */
 {
-    DEVA_XYZ	XYZ;
+    DeVAS_XYZ	XYZ;
     COLOR	rad_rgb, rad_xyz;
 
     colval ( rad_rgb, RED ) = RGBf.red;
@@ -170,24 +175,24 @@ DEVA_RGBf2XYZ ( DEVA_RGBf RGBf )
     return ( XYZ );
 }
 
-DEVA_RGBf
-DEVA_xyY2RGBf ( DEVA_xyY xyY )
+DeVAS_RGBf
+DeVAS_xyY2RGBf ( DeVAS_xyY xyY )
 /* Use Radiance definition of RGB primaries. */
 {
-    return ( DEVA_XYZ2RGBf ( DEVA_xyY2XYZ ( xyY ) ) );
+    return ( DeVAS_XYZ2RGBf ( DeVAS_xyY2XYZ ( xyY ) ) );
 }
 
-DEVA_xyY
-DEVA_RGBf2xyY ( DEVA_RGBf RGBf )
+DeVAS_xyY
+DeVAS_RGBf2xyY ( DeVAS_RGBf RGBf )
 /* Use Radiance definition of RGB primaries. */
 {
-    return ( DEVA_XYZ2xyY ( DEVA_RGBf2XYZ ( RGBf ) ) );
+    return ( DeVAS_XYZ2xyY ( DeVAS_RGBf2XYZ ( RGBf ) ) );
 }
 
-DEVA_RGBf
-DEVA_Y2RGBf ( DEVA_float Y )
+DeVAS_RGBf
+DeVAS_Y2RGBf ( DeVAS_float Y )
 {
-    DEVA_RGBf	RGBf;
+    DeVAS_RGBf	RGBf;
 
     RGBf.red = RGBf.green = RGBf.blue = Y / WHTEFFICACY;
 
@@ -195,7 +200,7 @@ DEVA_Y2RGBf ( DEVA_float Y )
 }
 
 float
-DEVA_RGBf2Y ( DEVA_RGBf RGBf )
+DeVAS_RGBf2Y ( DeVAS_RGBf RGBf )
 /* Use Radiance specification of RGB primaries. */
 {
     COLOR	rad_rgb;
@@ -207,7 +212,7 @@ DEVA_RGBf2Y ( DEVA_RGBf RGBf )
     return ( luminance ( rad_rgb ) );
 }
 
-#define DEVA_IMAGE_NEW( TYPE )						\
+#define DeVAS_IMAGE_NEW( TYPE )						\
 TYPE##_image *								\
 TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
 {									\
@@ -218,7 +223,8 @@ TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
 									\
     new_image = ( TYPE##_image * ) malloc ( sizeof ( TYPE##_image ) );	\
     if ( new_image == NULL ) {						\
-	fprintf ( stderr, "DEVA_image_new: malloc failed!" );		\
+	fprintf ( stderr, "DeVAS_image_new: malloc failed!" );		\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
         exit ( EXIT_FAILURE );						\
     }									\
 									\
@@ -234,13 +240,15 @@ TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
     new_image->start_data = (TYPE *) malloc ( n_rows * n_cols *		\
 	        sizeof ( TYPE ) );					\
     if ( new_image->start_data == NULL ) {				\
-	fprintf ( stderr, "DEVA_image_new: malloc failed!" );		\
+	fprintf ( stderr, "DeVAS_image_new: malloc failed!" );		\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
         exit ( EXIT_FAILURE );						\
     }									\
 									\
     line_pointers = (TYPE **) malloc ( n_rows * sizeof ( TYPE * ) );	\
     if ( line_pointers == NULL ) {					\
-	fprintf ( stderr, "DEVA_image_new: malloc failed!" );	\
+	fprintf ( stderr, "DeVAS_image_new: malloc failed!" );		\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
         exit ( EXIT_FAILURE );						\
     }									\
 									\
@@ -253,7 +261,7 @@ TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
     return ( new_image );						\
 }
 
-#define DEVA_IMAGE_NEW_FFTW_SINGLE( TYPE )				\
+#define DeVAS_IMAGE_NEW_FFTW_SINGLE( TYPE )				\
 TYPE##_image *								\
 TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
 {									\
@@ -264,11 +272,12 @@ TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
 									\
     new_image = ( TYPE##_image * ) malloc ( sizeof ( TYPE##_image ) );	\
     if ( new_image == NULL ) {						\
-	fprintf ( stderr, "DEVA_image_new: malloc failed!" );		\
+	fprintf ( stderr, "DeVAS_image_new: malloc failed!" );		\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
         exit ( EXIT_FAILURE );						\
     }									\
 									\
-    assert ( sizeof ( DEVA_complexf ) == sizeof ( float [2] ) );	\
+    assert ( sizeof ( DeVAS_complexf ) == sizeof ( float [2] ) );	\
     	/* make sure padding doesn't cause problems */			\
 									\
     new_image->n_rows = n_rows;						\
@@ -283,13 +292,15 @@ TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
     new_image->start_data = (TYPE *) fftwf_malloc ( n_rows * n_cols *	\
 	        sizeof ( TYPE ) );					\
     if ( new_image->start_data == NULL ) {				\
-	fprintf ( stderr, "DEVA_image_new: malloc failed!" );	\
+	fprintf ( stderr, "DeVAS_image_new: malloc failed!" );		\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
         exit ( EXIT_FAILURE );						\
     }									\
 									\
     line_pointers = (TYPE **) malloc ( n_rows * sizeof ( TYPE * ) );	\
     if ( line_pointers == NULL ) {					\
-	fprintf ( stderr, "DEVA_image_new: malloc failed!" );	\
+	fprintf ( stderr, "DeVAS_image_new: malloc failed!" );		\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
         exit ( EXIT_FAILURE );						\
     }									\
 									\
@@ -302,26 +313,32 @@ TYPE##_image_new ( unsigned int n_rows, unsigned int n_cols  )		\
     return ( new_image );						\
 }
 
-DEVA_IMAGE_NEW ( DEVA_gray )
-DEVA_IMAGE_NEW ( DEVA_double )
-DEVA_IMAGE_NEW ( DEVA_RGB )
-DEVA_IMAGE_NEW ( DEVA_RGBf )
-DEVA_IMAGE_NEW ( DEVA_XYZ )
-DEVA_IMAGE_NEW ( DEVA_xyY )
-#ifndef	DEVA_USE_FFTW3_ALLOCATORS
-DEVA_IMAGE_NEW ( DEVA_float )
-DEVA_IMAGE_NEW ( DEVA_complexf )
-/* DEVA_IMAGE_NEW ( DEVA_complexd ) */
+DeVAS_IMAGE_NEW ( DeVAS_gray )
+DeVAS_IMAGE_NEW ( DeVAS_double )
+DeVAS_IMAGE_NEW ( DeVAS_RGB )
+DeVAS_IMAGE_NEW ( DeVAS_RGBf )
+DeVAS_IMAGE_NEW ( DeVAS_XYZ )
+DeVAS_IMAGE_NEW ( DeVAS_xyY )
+#ifndef	DeVAS_USE_FFTW3_ALLOCATORS
+DeVAS_IMAGE_NEW ( DeVAS_float )
+DeVAS_IMAGE_NEW ( DeVAS_complexf )
+/* DeVAS_IMAGE_NEW ( DeVAS_complexd ) */
 #else
-DEVA_IMAGE_NEW_FFTW_SINGLE ( DEVA_float )
-DEVA_IMAGE_NEW_FFTW_SINGLE ( DEVA_complexf )
-/* DEVA_IMAGE_NEW_FFTW_DOUBLE ( DEVA_complexd ) */
-#endif	/* DEVA_USE_FFTW3_ALLOCATORS */
+DeVAS_IMAGE_NEW_FFTW_SINGLE ( DeVAS_float )
+DeVAS_IMAGE_NEW_FFTW_SINGLE ( DeVAS_complexf )
+/* DeVAS_IMAGE_NEW_FFTW_DOUBLE ( DeVAS_complexd ) */
+#endif	/* DeVAS_USE_FFTW3_ALLOCATORS */
 
-#define DEVA_IMAGE_DELETE( TYPE )					\
+#define DeVAS_IMAGE_DELETE( TYPE )					\
 void									\
 TYPE##_image_delete ( TYPE##_image *image )				\
 {									\
+    if ( image == NULL ) {						\
+	fprintf ( stderr,						\
+		"Attempt to delete empty image object (warning)\n" );	\
+	DeVAS_print_file_lineno ( __FILE__, __LINE__ );			\
+	return;								\
+    }									\
     if ( image->image_info.description != NULL ) {			\
 	free ( image->image_info.description );				\
 	image->image_info.description = NULL;				\
@@ -331,7 +348,7 @@ TYPE##_image_delete ( TYPE##_image *image )				\
     free ( image );							\
 }
 
-#define DEVA_IMAGE_DELETE_FFTW_SINGLE( TYPE )				\
+#define DeVAS_IMAGE_DELETE_FFTW_SINGLE( TYPE )				\
 void									\
 TYPE##_image_delete ( TYPE##_image *image )				\
 {									\
@@ -344,71 +361,77 @@ TYPE##_image_delete ( TYPE##_image *image )				\
     free ( image );							\
 }
 
-DEVA_IMAGE_DELETE ( DEVA_gray )
-DEVA_IMAGE_DELETE ( DEVA_double )
-DEVA_IMAGE_DELETE ( DEVA_RGB )
-DEVA_IMAGE_DELETE ( DEVA_RGBf )
-DEVA_IMAGE_DELETE ( DEVA_XYZ )
-DEVA_IMAGE_DELETE ( DEVA_xyY )
-#ifndef	DEVA_USE_FFTW3_ALLOCATORS
-DEVA_IMAGE_DELETE ( DEVA_float )
-DEVA_IMAGE_DELETE ( DEVA_complexf )
-/* DEVA_IMAGE_DELETE ( DEVA_complexd ) */
+DeVAS_IMAGE_DELETE ( DeVAS_gray )
+DeVAS_IMAGE_DELETE ( DeVAS_double )
+DeVAS_IMAGE_DELETE ( DeVAS_RGB )
+DeVAS_IMAGE_DELETE ( DeVAS_RGBf )
+DeVAS_IMAGE_DELETE ( DeVAS_XYZ )
+DeVAS_IMAGE_DELETE ( DeVAS_xyY )
+#ifndef	DeVAS_USE_FFTW3_ALLOCATORS
+DeVAS_IMAGE_DELETE ( DeVAS_float )
+DeVAS_IMAGE_DELETE ( DeVAS_complexf )
+/* DeVAS_IMAGE_DELETE ( DeVAS_complexd ) */
 #else
-DEVA_IMAGE_DELETE_FFTW_SINGLE ( DEVA_float )
-DEVA_IMAGE_DELETE_FFTW_SINGLE ( DEVA_complexf )
-/* DEVA_IMAGE_DELETE_FFTW_SINGLE ( DEVA_complexd ) */
-#endif	/* DEVA_USE_FFTW3_ALLOCATORS */
+DeVAS_IMAGE_DELETE_FFTW_SINGLE ( DeVAS_float )
+DeVAS_IMAGE_DELETE_FFTW_SINGLE ( DeVAS_complexf )
+/* DeVAS_IMAGE_DELETE_FFTW_SINGLE ( DeVAS_complexd ) */
+#endif	/* DeVAS_USE_FFTW3_ALLOCATORS */
 
 void
-DEVA_image_check_bounds ( DEVA_gray_image *deva_image, int row, int col,
+DeVAS_image_check_bounds ( DeVAS_gray_image *devas_image, int row, int col,
        int line, char *file )
 {
-    if ( ( row < 0 ) || ( row >= DEVA_image_n_rows ( deva_image ) ) ||
-	    ( col < 0 ) || ( col >= DEVA_image_n_cols ( deva_image ) ) ) {
-	fprintf ( stderr, "DEVA_image_data out-of-bounds reference!\n" );
-	fprintf ( stderr, "line %d in file %s\n", line, file );
+    if ( ( row < 0 ) || ( row >= DeVAS_image_n_rows ( devas_image ) ) ||
+	    ( col < 0 ) || ( col >= DeVAS_image_n_cols ( devas_image ) ) ) {
+	fprintf ( stderr, "DeVAS_image_data out-of-bounds reference!\n" );
+	DeVAS_print_file_lineno ( file, line );
 	exit ( EXIT_FAILURE );
     }
 }
 
-#define	DEVA_IMAGE_SAMESIZE( TYPE )					\
+void
+DeVAS_print_file_lineno ( char *file, int line )
+{
+    fprintf ( stderr, "line %d in file %s\n", line, file );
+}
+
+#define	DeVAS_IMAGE_SAMESIZE( TYPE )					\
 int									\
 TYPE##_image_samesize ( TYPE##_image *i1, TYPE##_image *i2 )		\
 {									\
-    return ( ( DEVA_image_n_rows ( i1 ) == DEVA_image_n_rows ( i2 ) ) && \
-	    ( DEVA_image_n_cols ( i1 ) == DEVA_image_n_cols ( i2 ) ) );	\
+    return ( ( DeVAS_image_n_rows ( i1 ) == DeVAS_image_n_rows ( i2 ) ) && \
+	    ( DeVAS_image_n_cols ( i1 ) == DeVAS_image_n_cols ( i2 ) ) );	\
 }
 
-DEVA_IMAGE_SAMESIZE ( DEVA_gray )
-DEVA_IMAGE_SAMESIZE ( DEVA_double )
-DEVA_IMAGE_SAMESIZE ( DEVA_RGB )
-DEVA_IMAGE_SAMESIZE ( DEVA_RGBf )
-DEVA_IMAGE_SAMESIZE ( DEVA_XYZ )
-DEVA_IMAGE_SAMESIZE ( DEVA_xyY )
-DEVA_IMAGE_SAMESIZE ( DEVA_float )
-DEVA_IMAGE_SAMESIZE ( DEVA_complexf )
-/* DEVA_IMAGE_SAMESIZE ( DEVA_complexd ) */
+DeVAS_IMAGE_SAMESIZE ( DeVAS_gray )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_double )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_RGB )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_RGBf )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_XYZ )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_xyY )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_float )
+DeVAS_IMAGE_SAMESIZE ( DeVAS_complexf )
+/* DeVAS_IMAGE_SAMESIZE ( DeVAS_complexd ) */
 
-#define	DEVA_IMAGE_SETVALUE( TYPE )					\
+#define	DeVAS_IMAGE_SETVALUE( TYPE )					\
 void									\
 TYPE##_image_setvalue ( TYPE##_image *image, TYPE value )		\
 {									\
     int	    row, col;							\
 									\
-    for ( row = 0; row < DEVA_image_n_rows ( image ); row++ ) {		\
-	for ( col = 0; col < DEVA_image_n_cols ( image ); col++ ) {	\
-	    DEVA_image_data ( image, row, col ) = value;		\
+    for ( row = 0; row < DeVAS_image_n_rows ( image ); row++ ) {		\
+	for ( col = 0; col < DeVAS_image_n_cols ( image ); col++ ) {	\
+	    DeVAS_image_data ( image, row, col ) = value;		\
 	}								\
     }									\
 }
 
-DEVA_IMAGE_SETVALUE ( DEVA_gray )
-DEVA_IMAGE_SETVALUE ( DEVA_double )
-DEVA_IMAGE_SETVALUE ( DEVA_RGB )
-DEVA_IMAGE_SETVALUE ( DEVA_RGBf )
-DEVA_IMAGE_SETVALUE ( DEVA_XYZ )
-DEVA_IMAGE_SETVALUE ( DEVA_xyY )
-DEVA_IMAGE_SETVALUE ( DEVA_float )
-DEVA_IMAGE_SETVALUE ( DEVA_complexf )
-/* DEVA_IMAGE_SETVALUE ( DEVA_complexd ) */
+DeVAS_IMAGE_SETVALUE ( DeVAS_gray )
+DeVAS_IMAGE_SETVALUE ( DeVAS_double )
+DeVAS_IMAGE_SETVALUE ( DeVAS_RGB )
+DeVAS_IMAGE_SETVALUE ( DeVAS_RGBf )
+DeVAS_IMAGE_SETVALUE ( DeVAS_XYZ )
+DeVAS_IMAGE_SETVALUE ( DeVAS_xyY )
+DeVAS_IMAGE_SETVALUE ( DeVAS_float )
+DeVAS_IMAGE_SETVALUE ( DeVAS_complexf )
+/* DeVAS_IMAGE_SETVALUE ( DeVAS_complexd ) */

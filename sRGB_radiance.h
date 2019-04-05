@@ -1,5 +1,5 @@
-#ifndef	__DEVA_SRGB_RAD
-#define	__DEVA_SRGB_RAD
+#ifndef	__DeVAS_SRGB_RAD
+#define	__DeVAS_SRGB_RAD
 
 /* sRGB primaries */
 #define	CIE_x_r_sRGB		0.64
@@ -18,4 +18,4 @@
 			    { CIE_x_w_sRGB, CIE_y_w_sRGB }	\
 			}
 
-#endif	/* __DEVA_SRGB_RAD */
+#endif	/* __DeVAS_SRGB_RAD */

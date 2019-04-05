@@ -1,4 +1,4 @@
-PROJECT ( DEVA_FILTER )
+PROJECT ( DeVAS_FILTER )
 
 cmake_minimum_required(VERSION 3.0)
 
@@ -54,9 +54,9 @@ ADD_EXECUTABLE ( rad2png rad2png.c
 	radiance/words.c
 	radiance/spec_rgb.c
 	radiance/timegm.c
-	deva-image.c
-	DEVA-sRGB.c
-	DEVA-png.c
+	devas-image.c
+	devas-sRGB.c
+	devas-png.c
 	)
 TARGET_LINK_LIBRARIES ( rad2png
 	${PNG_LIBRARIES}
@@ -64,7 +64,7 @@ TARGET_LINK_LIBRARIES ( rad2png
 	)
 
 ADD_EXECUTABLE ( rad2jpeg rad2jpeg.c
-	DEVA-jpeg.c
+	devas-jpeg.c
 	radianceIO.c
 	radiance-header.c
 	radiance/color.c
@@ -77,8 +77,8 @@ ADD_EXECUTABLE ( rad2jpeg rad2jpeg.c
 	radiance/words.c
 	radiance/spec_rgb.c
 	radiance/timegm.c
-	deva-image.c
-	DEVA-sRGB.c
+	devas-image.c
+	devas-sRGB.c
 	iccjpeg.c
 	)
 TARGET_LINK_LIBRARIES ( rad2jpeg

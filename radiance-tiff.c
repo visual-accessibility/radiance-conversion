@@ -13,7 +13,7 @@
 #include "radiance/view.h"
 #include "tifftoolsimage.h"
 #include "radiance-conversion-version.h"
-#include "deva-license.h"
+#include "devas-license.h"
 
 void	set_header ( RadianceHeader *header, VIEW *view, int exposure_set,
             double exposure, char *description );
@@ -62,7 +62,7 @@ TT_float_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     int			n_rows, n_cols;
     char		*description;
 
-    DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
+    DeVAS_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
 	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -144,7 +144,7 @@ TT_float_image_to_radfile ( FILE *radiance_fp, TT_float_image *luminance,
     color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
-    DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
+    DeVAS_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
 	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -214,7 +214,7 @@ TT_RGBf_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     int			n_rows, n_cols;
     char		*description;
 
-    DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
+    DeVAS_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
 	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -306,7 +306,7 @@ TT_RGBf_image_to_radfile ( FILE *radiance_fp, TT_RGBf_image *RGBf,
     color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
-    DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
+    DeVAS_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
 	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -377,7 +377,7 @@ TT_XYZ_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     int			n_rows, n_cols;
     char		*description;
 
-    DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
+    DeVAS_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
 	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -470,7 +470,7 @@ TT_XYZ_image_to_radfile ( FILE *radiance_fp, TT_XYZ_image *XYZ,
     color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
-    DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
+    DeVAS_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
 	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -543,7 +543,7 @@ TT_xyY_image_from_radfile ( FILE *radiance_fp, RadianceHeader *header )
     int			n_rows, n_cols;
     char		*description;
 
-    DEVA_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
+    DeVAS_read_radiance_header ( radiance_fp, &n_rows, &n_cols,
 	    &color_format, &view, &exposure_set, &exposure, &description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );
@@ -638,7 +638,7 @@ TT_xyY_image_to_radfile ( FILE *radiance_fp, TT_xyY_image *xyY,
     color_format = radcolor_rgbe;
     set_fov_in_view ( &view, &header );
 
-    DEVA_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
+    DeVAS_write_radiance_header ( radiance_fp, n_rows, n_cols, color_format,
 	    view, header.exposure_set, header.exposure, description );
 
     radiance_scanline = (COLOR *) malloc ( n_cols * sizeof ( COLOR ) );

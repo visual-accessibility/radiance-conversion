@@ -21,7 +21,7 @@
 
 #define	SQR(x)	( (x) * (x) )
 
-DEVA_FOV
+DeVAS_FOV
 FocalLength_35mm_2_FOV_diag ( double FocalLength_35mm, int v_dim, int h_dim )
 /*
  * Convert 35mm equivalent focal length to diagonal-axis field of view.
@@ -37,7 +37,7 @@ FocalLength_35mm_2_FOV_diag ( double FocalLength_35mm, int v_dim, int h_dim )
     double	diagonal_px;		/* of image (in pixels) */
     double	diagonal_fov_rad;	/* radians */
     double	focal_length_px;	/* of image (in pixels) */
-    DEVA_FOV	fov_degrees;
+    DeVAS_FOV	fov_degrees;
 
     diagonal_fov_rad = 2.0 * atan2 ( 0.5 * DIAGONAL_35MM, FocalLength_35mm );
 
@@ -54,7 +54,7 @@ FocalLength_35mm_2_FOV_diag ( double FocalLength_35mm, int v_dim, int h_dim )
 }
 
 double
-FOV_diag_2_FocalLength_35mm ( DEVA_FOV fov, int v_dim, int h_dim )
+FOV_diag_2_FocalLength_35mm ( DeVAS_FOV fov, int v_dim, int h_dim )
 /*
  * Convert vertical and horizontal fields-of-view to 35mm equivalent focal
  * length (based on diagonal).
@@ -156,7 +156,7 @@ radian2degree ( double radians )
 }
 
 void
-set_tiff_fov_diag ( TIFF *file, DEVA_FOV fov, int v_dim, int h_dim )
+set_tiff_fov_diag ( TIFF *file, DeVAS_FOV fov, int v_dim, int h_dim )
 {
     double  focal_length_35mm;
 
@@ -165,10 +165,10 @@ set_tiff_fov_diag ( TIFF *file, DEVA_FOV fov, int v_dim, int h_dim )
     set_tiff_35mm_equiv ( file, focal_length_35mm );
 }
 
-DEVA_FOV
+DeVAS_FOV
 get_tiff_fov_diag ( TIFF *file, int v_dim, int h_dim )
 {
-    DEVA_FOV	fov;
+    DeVAS_FOV	fov;
     double	FocalLength_35mm;
 
     FocalLength_35mm = get_tiff_35mm_equiv ( file );
@@ -186,7 +186,7 @@ set_tiff_fov ( TIFF *file, double fov )
 /*
  * Creates an EXIF directory for an open TIFF file and add a TIFFTAG_EXIFIFD
  * tag with the value corresponding to the specified field-of-view.
- * This routine is specialized for the DEVA software bundle.  In particular,
+ * This routine is specialized for the DeVAS software bundle.  In particular,
  * the TIFF file cannot already have an EXIF directory when this routine
  * is called.
  *
@@ -258,7 +258,7 @@ set_tiff_35mm_equiv ( TIFF *file, double focal_length_35mm )
 /*
  * Creates an EXIF directory for an open TIFF file and add a TIFFTAG_EXIFIFD
  * tag with the value corresponding to the specified effective focal length.
- * This routine is specialized for the DEVA software bundle.  In particular,
+ * This routine is specialized for the DeVAS software bundle.  In particular,
  * the TIFF file cannot already have an EXIF directory when this routine
  * is called.
  *
