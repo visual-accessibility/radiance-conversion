@@ -1,7 +1,0 @@
-#! /bin/sh
-
-man -t ./rad2tiff.1 | ps2pdf - rad2tiff.pdf
-man -t ./tiff2rad.1 | ps2pdf - tiff2rad.pdf
-man -t ./rad2jpeg.1 | ps2pdf - rad2jpeg.pdf
-man -t ./rad2png.1 | ps2pdf - rad2png.pdf
-man -t ./tiff32_to_8.1 | ps2pdf - tiff32_to_8.pdf
