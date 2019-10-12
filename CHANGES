@@ -1,10 +1,19 @@
+version 3.1.02
+
+Clean up of devas-png.cdevas-png.c, particularly strange behavior of
+png_image_begin_read_from_stdio for 1 channel PNG input images.
+
+version 3.1.01
+
+Added --fov_35mm_equivalent option to tiff2rad.
+
 version 3.1.00
 
-DEVA => DeVAS name changes to files borrowed from DeVAS-filter
+DEVA => DeVAS name changes to files borrowed from DeVAS-filter.
 
 version 3.0.06
 
-Minor clean up of distribution process
+Minor clean up of distribution process.
 
 version 3.0.05
 

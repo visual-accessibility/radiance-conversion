@@ -31,7 +31,8 @@
 #include "radiance-conversion-version.h"
 #include "devas-license.h"
 
-char	*Usage = "tiff2rad [--sRGBencoding] input.tif output.hdr";
+char	*Usage =
+"tiff2rad [--fov_35mm_equivalent=<value>] [--sRGBencoding] input.tif output.hdr";
 int	args_needed = 2;
 
 int
@@ -52,6 +53,7 @@ main ( int argc, char *argv[] )
     COLOR	    radiance_pixel_in;
     COLOR	    radiance_pixel_out;
     TT_RGBf	    TT_pixel;
+    double	    fov_35mm_equivalent = NO_TIFF_35MM_EQUIV;
     int		    row, col;
     int		    argpt = 1;
 
@@ -61,6 +63,16 @@ main ( int argc, char *argv[] )
 		) ) {
 	    sRGBencoding_flag = TRUE;
 	    argpt++;
+	} else if ( strncasecmp ( argv[argpt], "--fov_35mm_equivalent=",
+			    strlen ( "--fov_35mm_equivalent=" ) ) == 0 ) {
+		fov_35mm_equivalent = atof ( argv[argpt] +
+			strlen ( "--fov_35mm_equivalent=" ) );
+		argpt++;
+	} else if ( strncasecmp ( argv[argpt], "-fov_35mm_equivalent=",
+			    strlen ( "-fov_35mm_equivalent=" ) ) == 0 ) {
+		fov_35mm_equivalent = atof ( argv[argpt] +
+			strlen ( "-fov_35mm_equivalent=" ) );
+		argpt++;
 	} else {
 	    fprintf ( stderr, "unknown argument (%s)!\n", argv[argpt] );
 	    return ( EXIT_FAILURE );	/* error return */
@@ -96,9 +108,15 @@ main ( int argc, char *argv[] )
 		    TT_image_n_cols ( gray_image ) );
 
 	    /* based on diagonal */
-	    devas_fov = get_tiff_fov_diag ( input,
-		    TT_image_n_rows ( gray_image ),
-		    TT_image_n_cols ( gray_image ) );
+	    if ( fov_35mm_equivalent == NO_TIFF_35MM_EQUIV ) {
+		devas_fov = get_tiff_fov_diag ( input,
+			TT_image_n_rows ( gray_image ),
+			TT_image_n_cols ( gray_image ) );
+	    } else {
+		devas_fov = FocalLength_35mm_2_FOV_diag ( fov_35mm_equivalent,
+			TT_image_n_rows ( gray_image ),
+			TT_image_n_cols ( gray_image ) );
+	    }
 	    header.hFOV = devas_fov.h_fov;
 	    header.vFOV = devas_fov.v_fov;
 
@@ -126,9 +144,15 @@ main ( int argc, char *argv[] )
 		    TT_image_n_cols ( float_image ) );
 
 	    /* based on diagonal */
-	    devas_fov = get_tiff_fov_diag ( input,
-		    TT_image_n_rows ( float_image ),
-		    TT_image_n_cols ( float_image ) );
+	    if ( fov_35mm_equivalent == NO_TIFF_35MM_EQUIV ) {
+		devas_fov = get_tiff_fov_diag ( input,
+			TT_image_n_rows ( float_image ),
+			TT_image_n_cols ( float_image ) );
+	    } else {
+		devas_fov = FocalLength_35mm_2_FOV_diag ( fov_35mm_equivalent,
+			TT_image_n_rows ( float_image ),
+			TT_image_n_cols ( float_image ) );
+	    }
 	    header.hFOV = devas_fov.h_fov;
 	    header.vFOV = devas_fov.v_fov;
 
@@ -156,9 +180,15 @@ main ( int argc, char *argv[] )
 		    TT_image_n_cols ( RGB_image ) );
 
 	    /* based on diagonal */
-	    devas_fov = get_tiff_fov_diag ( input,
-		    TT_image_n_rows ( RGB_image ),
-		    TT_image_n_cols ( RGB_image ) );
+	    if ( fov_35mm_equivalent == NO_TIFF_35MM_EQUIV ) {
+		devas_fov = get_tiff_fov_diag ( input,
+			TT_image_n_rows ( RGBf_image ),
+			TT_image_n_cols ( RGBf_image ) );
+	    } else {
+		devas_fov = FocalLength_35mm_2_FOV_diag ( fov_35mm_equivalent,
+			TT_image_n_rows ( RGBf_image ),
+			TT_image_n_cols ( RGBf_image ) );
+	    }
 	    header.hFOV = devas_fov.h_fov;
 	    header.vFOV = devas_fov.v_fov;
 
@@ -180,9 +210,15 @@ main ( int argc, char *argv[] )
 	    RGBf_image = TT_RGBf_image_from_file ( input );
 
 	    /* based on diagonal */
-	    devas_fov = get_tiff_fov_diag ( input,
-		    TT_image_n_rows ( RGBf_image ),
-		    TT_image_n_cols ( RGBf_image ) );
+	    if ( fov_35mm_equivalent == NO_TIFF_35MM_EQUIV ) {
+		devas_fov = get_tiff_fov_diag ( input,
+			TT_image_n_rows ( RGBf_image ),
+			TT_image_n_cols ( RGBf_image ) );
+	    } else {
+		devas_fov = FocalLength_35mm_2_FOV_diag ( fov_35mm_equivalent,
+			TT_image_n_rows ( RGBf_image ),
+			TT_image_n_cols ( RGBf_image ) );
+	    }
 	    header.hFOV = devas_fov.h_fov;
 	    header.vFOV = devas_fov.v_fov;
 

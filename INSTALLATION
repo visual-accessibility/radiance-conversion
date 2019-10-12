@@ -41,7 +41,7 @@ To build the software for MacOS:
       Mac-build-script
 
 3.  Copy the executable files rad2jpeg, rad2png, rad2tiff, tiff2rad, and
-    tiff32_to_8 from radiance-conversion/build to wherever you want
+    tiff32_to_8 from radiance-conversion/build-mac to wherever you want
     them.
 
 4.  To remove everything generated in the build process, run the

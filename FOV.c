@@ -12,8 +12,6 @@
 #include <math.h>
 #include "FOV.h"
 
-#define	NO_TIFF_35MM_EQUIV	-1.0
-
 #define	DIAGONAL_35MM		43.266615	/* mm */
 
 #define	V_H_DIFF_TOLERANCE	0.01	/* allowable mismatch between */

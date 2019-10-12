@@ -2,14 +2,6 @@
  * Like DeVAS_RGB_image_from_filename, DeVAS_RGB_image_from_file,
  * DeVAS_RGB_image_to_filename, and DeVAS_RGB_image to file, execept
  * works with PNG files.
- *
- * Read routines are special cased to return value of
- * EXIF_TAG_FOCAL_LENGTH_IN_35MM_FILM tag, if present.
- * (General version of these routings, without the tag
- * processing, need to be written at some point.
- *
- * Based on example.c from jpeg-6b source, but appears to
- * also work with jpeg-8.
  */
 
 #ifndef __DeVAS_PNG_H

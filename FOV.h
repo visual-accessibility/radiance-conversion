@@ -19,6 +19,8 @@
 
 #include <tiffio.h>
 
+#define	NO_TIFF_35MM_EQUIV	-1.0
+
 typedef struct {
     double  v_fov;	/* degrees */
     double  h_fov;	/* degrees */

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "TT-sRGB.h"
+#include "FOV.h"
 #include "radiance-tiff.h"
 #include "radiance-header.h"
 #include "radiance/color.h"
@@ -689,7 +690,12 @@ set_header ( RadianceHeader *header, VIEW *view, int exposure_set,
 void
 set_fov_in_view ( VIEW *view, RadianceHeader *header )
 {
-    view->type = VT_PER;
-    view->horiz = header->hFOV;
-    view->vert = header->vFOV;
+    if ( ( header->hFOV != NO_TIFF_35MM_EQUIV ) &&
+	    ( header->hFOV != NO_TIFF_35MM_EQUIV ) ) {
+	view->type = VT_PER;
+	view->horiz = header->hFOV;
+	view->vert = header->vFOV;
+    } else {
+	view->type = 0;
+    }
 }
